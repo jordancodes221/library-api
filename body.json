@@ -1,4 +1,5 @@
 {
-  "isbn": "0002",
-  "state": "available"
+  "isbn": "0003",
+  "state": "available",
+  "customerid": "01"
 }
