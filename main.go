@@ -9,7 +9,7 @@
 		"errors"
 		"time"
 		// "encoding/json"
-		//"strconv"
+		// "strconv"
 		// "fmt"
 	)
 	
@@ -111,9 +111,10 @@
 	// update this struct to be named "request"
 	// make sure it includes customer ID
 	type request struct{
-		Requested_State string 	`json:"requested_state"`
-		// request_time - date/time
-		CustomerID 		string 	`json:"customerid"` // if nobody, "00"
+		Requested_State string 		`json:"requested_state"`
+		CustomerID 		string 		`json:"customerid"`
+		Request_time	time.Time	`json:"request_time"`
+
 	}
 	
 	// PATCH
