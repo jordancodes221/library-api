@@ -113,7 +113,6 @@
 	type request struct{
 		Requested_State string 		`json:"requested_state"`
 		CustomerID 		string 		`json:"customerid"`
-		Request_time	time.Time	`json:"request_time"`
 
 	}
 	
