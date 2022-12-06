@@ -1,32 +1,38 @@
 // TO DO
 	// add created and updated timestamps
 
-
 	package main
 
 	import (
 		"net/http"
 		"github.com/gin-gonic/gin"
 		"errors"
-		// "time"
+		"time"
 		// "encoding/json"
 		//"strconv"
 		// "fmt"
 	)
 	
 	type book struct{
-		ISBN 		string 	`json:"isbn"`
-		State 		string 	`json:"state"` // available, checked-out
-		// created - date/time
-		// updated - date/time
+		ISBN 					string 	`json:"isbn"`
+		State 					string 	`json:"state"` // available, checked-out
+
 		Onhold_customerID 		string 	`json:"onhold_customerid"` // if nobody, "00"
 		Checkedout_customerID 	string `json:"checkedout_customerid"`
+
+		Time_created 			time.Time `json:"time_created"`
+		Time_updated  			time.Time `json:"time_updated"`
+	}
+
+	type book_input struct{
+		ISBN 					string 	`json:"isbn"`
+		State 					string 	`json:"state"` // available, checked-out
 	}
 	
 	// change books to be stored in a map, rather than an array
-	var book_0 book = book{"0000", "available", "", ""} // not on-hold, not checked-out
-	var book_1 book = book{"0001", "checked-out", "", "01"} // checked-out, not on-hold
-	var book_2 book = book{"0002", "checked-out", "02", "01"} // checked-out, on-hold by another customer
+	var book_0 book = book{"0000", "available", 	"", 	"", 	time.Now(), time.Time{}} // not on-hold, not checked-out
+	var book_1 book = book{"0001", "checked-out", 	"", 	"01", 	time.Now(), time.Time{}} // checked-out, not on-hold
+	var book_2 book = book{"0002", "checked-out", 	"02", 	"01", 	time.Now(), time.Time{}} // checked-out, on-hold by another customer
 	
 	var map_of_books = map[string]*book{
 		"0000" : &book_0,
@@ -72,14 +78,15 @@
 	
 	// POST
 	func createBook(c *gin.Context) {
-		var newBook book
+		var newBookInput book_input
 	
-		if err := c.BindJSON(&newBook); err != nil {
+		if err := c.BindJSON(&newBookInput); err != nil {
 			return // BindJSON will handle the error response
 		}
-	
-		// GET ISBN NUMBER FROM NEWBOOK JSON then map_of_books[newbook_isbn] = newbook
-		var new_isbn string = newBook.ISBN
+
+		var new_isbn string = newBookInput.ISBN
+		var new_state string = newBookInput.State
+		var newBook book = book{new_isbn, new_state, "", "", time.Now(), time.Time{}}
 		map_of_books[new_isbn] = &newBook
 	
 		c.IndentedJSON(http.StatusCreated, newBook)
@@ -225,55 +232,6 @@
 	// NEED TO UPDATE PATCH REQUEST DATA TO MATCH NEW SCHEMA .... NEVERMIND!!!!!
 		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"Requested_State": "checked-out", "CustomerID": "01"}'
 	
+	// POST
+		// curl localhost:8080/books --include --header "Content-Type: application/json" -d @body.json --request "POST"
 	////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////////////////////////
-	
-	// // CHECKOUT BOOK
-	// func checkoutBook(c *gin.Context) {
-	// 	isbn, ok := c.GetQuery("isbn")
-	
-	// 	if ok == false {
-	// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Query parameter (ISBN) is missing."})
-	// 		return
-	// 	}
-	
-	// 	book, err := bookByISBN(isbn)
-	// 	if err != nil {
-	// 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
-	// 		return
-	// 	}
-	// 	if book.State == "checked-out" {
-	// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Book is already checked-out."})
-	// 		return
-	// 	}
-	
-	// 	book.State = "checked-out"
-	// 	c.IndentedJSON(http.StatusOK, book)
-	// }
-	
-	// RETURN BOOK
-	// func returnBook(c *gin.Context) {
-	// 	isbn, ok := c.GetQuery("isbn")
-	// 	if ok == false {
-	// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Query parameter (ISBN) is missing."})
-	// 		return
-	// 	}
-	
-	// 	book, err := bookByISBN(isbn)
-	// 	if err != nil {
-	// 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Book not found."})
-	// 		return
-	// 	}
-	// 	if book.State == "available" {
-	// 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Book has already been returned."})
-	// 		return
-	// 	}
-	
-	// 	book.State = "available"
-	// 	c.IndentedJSON(http.StatusOK, book)
-	// }
-	
-	
-	
