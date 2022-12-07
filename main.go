@@ -239,14 +239,15 @@ func main() {
 	router.Run("localhost:8080")
 }
 
-
-
-// Make a new branch where you add a README, with curl commands
-// PATCH request is as follows
-// had an error because the request had State instead of Requested_State in the json
-// NEED TO UPDATE PATCH REQUEST DATA TO MATCH NEW SCHEMA .... NEVERMIND!!!!!
-	// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"Requested_State": "checked-out", "CustomerID": "01"}'
-
-// POST
-	// curl localhost:8080/books --include --header "Content-Type: application/json" -d @body.json --request "POST"
-////////////////////////////////////////////////////////////////////////////////////
+// To test, run "go run ." in one terminal window and a curl command in the another terminal window.
+// Examples of curl commands are:
+	// GET (all books)
+		// curl localhost:8080/books
+	// GET (individual book)
+		// curl localhost:8080/books/0000
+	// POST
+		// curl localhost:8080/books --include --header "Content-Type: application/json" -d @body.json --request "POST"
+	// DELETE
+		// curl localhost:8080/books/0000 --request "DELETE"
+	// PATCH
+		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"Requested_State": "checked-out", "CustomerID": "01"}'
