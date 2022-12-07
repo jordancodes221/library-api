@@ -141,31 +141,42 @@ func updateBook(c* gin.Context) {
 
 	if (current_state == "available") {
 		book.State = requested_state
+		if (requested_state == "available") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "This book is already available."})
+		}
 		if (requested_state == "on-hold") {
 			book.Onhold_customerID = request_customerID
 			book.Time_updated = time.Now()
-		} else if (requested_state == "checked-out") {
+		}
+		if (requested_state == "checked-out") {
 			book.Checkedout_customerID = request_customerID
 			book.Time_updated = time.Now()
 		}
-	} else if (current_state == "on-hold") {
+	}
+	
+	if (current_state == "on-hold") {
 		if (book_onhold_customerID == request_customerID) { // The request comes from the customer who has it on-hold.
 			book.State = requested_state
 			book.Time_updated = time.Now()
+			if (requested_state == "available") {
+				book.Onhold_customerID = ""
+				book.Time_updated = time.Now()
+			}
+			if (requested_state == "on-hold") {
+				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "This customer already has this book on-hold."})
+			}
 			if (requested_state == "checked-out") {
 				book.Onhold_customerID = ""
 				book.Checkedout_customerID = request_customerID
 				book.Time_updated = time.Now()
 			}
-			if (requested_state == "available") {
-				book.Onhold_customerID = ""
-				book.Time_updated = time.Now()
-			}
 		} else { // The request comes from a customer different from the one who has the book on-hold.
-			// Only the customer who has the book on-hold can change its state, so raise an error
+			// If the book's state is on-hold, no customer (other than the one who has it on-hold) can change its state
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book on-hold."})
 		}
-	} else { // if (current_state) == "checked-out"
+	} 
+	
+	if (current_state == "checked-out") {
 		if (book_checkedout_customerID == request_customerID) { // The request comes from the customer who has it checked-out
 			if (requested_state == "available") {
 				// In this case, the customer who has it checked-out wishes to return the book (requesting the state is changed to "available")
@@ -179,7 +190,8 @@ func updateBook(c* gin.Context) {
 					book.Checkedout_customerID = ""
 					book.Time_updated = time.Now()
 				}
-			} else if (requested_state == "on-hold") {
+			}
+			if (requested_state == "on-hold") {
 				// In this case, the customer who has it checked-out wishes to place it on-hold.
 				// If another customer has the book on-hold, this state change cannot be done.
 				if (book_onhold_customerID == "") { // Nobody has the book on-hold
@@ -190,14 +202,15 @@ func updateBook(c* gin.Context) {
 				} else { // Another customer has the book on-hold
 					c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book on-hold."})
 				}
-			} else { // if (requested_state == "checked-out")
-				book.State = "checked-out" // This is an idempotent operation on the book's state.
-				book.Time_updated = time.Now()
+			}
+			if (requested_state == "checked-out") {
+				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "This customer already has this book checked-out."})
 			}
 		} else { // The request comes from a customer different from the one who has it checked-out
 			if (requested_state == "available") {
 				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book checked-out."})
-			} else if (requested_state == "on-hold") {
+			}
+			if (requested_state == "on-hold") {
 				// In this case, the book is checked-out and another customer requests to put it on-hold (meanwhile no other customer has it on-hold)
 				// We can update the Onhold_customerID to accomodate this request, but the book's state will remain unchanged (it stays as "checked-out")
 				if (book_onhold_customerID == "") { // Nobody has the book on-hold
@@ -206,8 +219,9 @@ func updateBook(c* gin.Context) {
 				} else { // Another customer has the book on-hold
 					c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. The book is checked-out, and another customer has it on-hold."})
 				}
-			} else { // if (requested_state == "available")
-				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book checked-out. Consider placing it on-hold"})
+			}
+			if (requested_state == "checked-out") {
+				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book checked-out. Consider trying to place it on-hold"})
 			}
 		}
 	}
@@ -226,7 +240,6 @@ func main() {
 }
 
 
-// Clean up the logic... get rid of else statements and the "idempotent state updates"
 
 // Make a new branch where you add a README, with curl commands
 // PATCH request is as follows
