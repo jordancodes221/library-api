@@ -92,16 +92,7 @@ func CreateBook(c *gin.Context) {
 func DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 	delete(mapOfBooks, isbn)
-
-	// The following prints the newly-shortened list of books
-	// It makes this function O(N) rather than O(1), so perhaps it should be omitted
-	var vals []*Book
-	for _, v := range mapOfBooks {
-		vals = append(vals, v)
-	}
-	// End of possibly un-needed section
-
-	c.IndentedJSON(http.StatusOK, vals)
+	c.Status(http.StatusNoContent) // changed from c.IndentedJSON(http.StatusOK, "")
 }
 
 // The following struct is needed to handle PATCH requests
