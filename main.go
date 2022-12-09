@@ -10,34 +10,34 @@ import (
 	// "fmt"
 )
 
-type book struct{
+type Book struct{
 	ISBN 					string 	`json:"isbn"`
 	State 					string 	`json:"state"`
 
-	Onhold_customerID 		string 	`json:"onhold_customerid"`
-	Checkedout_customerID 	string `json:"checkedout_customerid"`
+	OnHoldCustomerID 		string 	`json:"onholdcustomerid"` 	// re-named from Onhold_customerID
+	CheckedOutCustomerID 	string 	`json:"checkedoutcustomerid"` // re-named from CheckedOutCustomerID
 
-	Time_created 			time.Time `json:"time_created"`
-	Time_updated  			time.Time `json:"time_updated"`
+	TimeCreated 			time.Time `json:"timecreated"` // re-named from Time_created
+	TimeUpdated  			time.Time `json:"timeupdated"` // re-named from Time_updated
 }
 
 // Test data
-var book_0 book = book{"0000", "available", 	"", 	"", 	time.Now(), time.Time{}} // not on-hold, not checked-out
-var book_1 book = book{"0001", "checked-out", 	"", 	"01", 	time.Now(), time.Time{}} // checked-out, not on-hold
-var book_2 book = book{"0002", "checked-out", 	"02", 	"01", 	time.Now(), time.Time{}} // checked-out by one customer, on-hold by another
+var bookInstance0 Book = Book{"0000", "available", 	"", 	"", 	time.Now(), time.Time{}} // not on-hold, not checked-out
+var bookInstance1 Book = Book{"0001", "checked-out", 	"", 	"01", 	time.Now(), time.Time{}} // checked-out, not on-hold
+var bookInstance2 Book = Book{"0002", "checked-out", 	"02", 	"01", 	time.Now(), time.Time{}} // checked-out by one customer, on-hold by another
 
-var map_of_books = map[string]*book{
-	"0000" : &book_0,
-	"0001" : &book_1,
-	"0002" : &book_2,
+var mapOfBooks = map[string]*Book{
+	"0000" : &bookInstance0,
+	"0001" : &bookInstance1,
+	"0002" : &bookInstance2,
 }
 
 // GET (all books)
 func getAllBooks(c *gin.Context) {
-	// Make a slice containing all the values from map_of_books
-	var vals []*book
+	// Make a slice containing all the values from mapOfBooks
+	var vals []*Book
 	
-	for _, v := range map_of_books {
+	for _, v := range mapOfBooks {
 		vals = append(vals, v)
 	}
 
@@ -45,11 +45,11 @@ func getAllBooks(c *gin.Context) {
 }
 
 // Helper function for GET (individual book)
-func bookByISBN(isbn string) (*book, error) {
-	book_ptr, ok := map_of_books[isbn]
+func bookByISBN(isbn string) (*Book, error) {
+	bookPtr, ok := mapOfBooks[isbn]
 
 	if ok {
-		return book_ptr, nil
+		return bookPtr, nil
 	} else {
 		return nil, errors.New("Book not found.")
 	}
@@ -69,36 +69,34 @@ func getIndividualBook(c *gin.Context) {
 }
 
 // The following struct is needed to handle POST requests
-type book_input struct{
+type BookInput struct{
 	ISBN 					string 	`json:"isbn"`
 	State 					string 	`json:"state"`
 }
 
 // POST
 func createBook(c *gin.Context) {
-	var newBookInput book_input
+	var newBookInput BookInput
 
 	if err := c.BindJSON(&newBookInput); err != nil {
 		return // BindJSON handles the error response
 	}
 
-	var new_isbn string = newBookInput.ISBN
-	var new_state string = newBookInput.State
-	var newBook book = book{new_isbn, new_state, "", "", time.Now(), time.Time{}}
-	map_of_books[new_isbn] = &newBook
+	var newBook Book = Book{newBookInput.ISBN, newBookInput.State, "", "", time.Now(), time.Time{}}
+	mapOfBooks[newBookInput.ISBN] = &newBook
 
 	c.IndentedJSON(http.StatusCreated, newBook)
 }
 
 // DELETE
-func deleteBook(c* gin.Context) {
+func deleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
-	delete(map_of_books, isbn)
+	delete(mapOfBooks, isbn)
 
 	// The following prints the newly-shortened list of books
 	// It makes this function O(N) rather than O(1), so perhaps it should be omitted
-	var vals []*book
-	for _, v := range map_of_books {
+	var vals []*Book
+	for _, v := range mapOfBooks {
 		vals = append(vals, v)
 	}
 	// End of possibly un-needed section
@@ -107,14 +105,14 @@ func deleteBook(c* gin.Context) {
 }
 
 // The following struct is needed to handle PATCH requests
-type request struct{
-	Requested_State string 		`json:"requested_state"`
+type Request struct{
+	RequestedState string 		`json:"requestedstate"`
 	CustomerID 		string 		`json:"customerid"`
 
 }
 
 // PATCH
-func updateBook(c* gin.Context) {
+func updateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
 	book, err := bookByISBN(isbn)
@@ -122,53 +120,51 @@ func updateBook(c* gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."})
 		return
 	}
-	current_state := book.State
-	book_onhold_customerID := book.Onhold_customerID
-	book_checkedout_customerID := book.Checkedout_customerID
+	currentState := book.State
 
-	var newRequest request
+	var newRequest Request
 	if err := c.BindJSON(&newRequest); err != nil {
 		return
 	}	
-	requested_state := newRequest.Requested_State
-	request_customerID := newRequest.CustomerID
+	requestedState := newRequest.RequestedState
+	requestCustomerID := newRequest.CustomerID
 
 	// Ensure requested state is valid
-	if (requested_state != "available") && (requested_state != "on-hold") && (requested_state != "checked-out") {
+	if (requestedState != "available") && (requestedState != "on-hold") && (requestedState != "checked-out") {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid state requested."})
 		return
 	}
 
-	if (current_state == "available") {
-		book.State = requested_state
-		if (requested_state == "available") {
+	if (currentState == "available") {
+		book.State = requestedState
+		if (requestedState == "available") {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "This book is already available."})
 		}
-		if (requested_state == "on-hold") {
-			book.Onhold_customerID = request_customerID
-			book.Time_updated = time.Now()
+		if (requestedState == "on-hold") {
+			book.OnHoldCustomerID = requestCustomerID
+			book.TimeUpdated = time.Now()
 		}
-		if (requested_state == "checked-out") {
-			book.Checkedout_customerID = request_customerID
-			book.Time_updated = time.Now()
+		if (requestedState == "checked-out") {
+			book.CheckedOutCustomerID = requestCustomerID
+			book.TimeUpdated = time.Now()
 		}
 	}
 	
-	if (current_state == "on-hold") {
-		if (book_onhold_customerID == request_customerID) { // The request comes from the customer who has it on-hold.
-			book.State = requested_state
-			book.Time_updated = time.Now()
-			if (requested_state == "available") {
-				book.Onhold_customerID = ""
-				book.Time_updated = time.Now()
+	if (currentState == "on-hold") {
+		if (book.OnHoldCustomerID == requestCustomerID) { // The request comes from the customer who has it on-hold.
+			book.State = requestedState
+			book.TimeUpdated = time.Now()
+			if (requestedState == "available") {
+				book.OnHoldCustomerID = ""
+				book.TimeUpdated = time.Now()
 			}
-			if (requested_state == "on-hold") {
+			if (requestedState == "on-hold") {
 				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "This customer already has this book on-hold."})
 			}
-			if (requested_state == "checked-out") {
-				book.Onhold_customerID = ""
-				book.Checkedout_customerID = request_customerID
-				book.Time_updated = time.Now()
+			if (requestedState == "checked-out") {
+				book.OnHoldCustomerID = ""
+				book.CheckedOutCustomerID = requestCustomerID
+				book.TimeUpdated = time.Now()
 			}
 		} else { // The request comes from a customer different from the one who has the book on-hold.
 			// If the book's state is on-hold, no customer (other than the one who has it on-hold) can change its state
@@ -176,51 +172,51 @@ func updateBook(c* gin.Context) {
 		}
 	} 
 	
-	if (current_state == "checked-out") {
-		if (book_checkedout_customerID == request_customerID) { // The request comes from the customer who has it checked-out
-			if (requested_state == "available") {
+	if (currentState == "checked-out") {
+		if (book.CheckedOutCustomerID == requestCustomerID) { // The request comes from the customer who has it checked-out
+			if (requestedState == "available") {
 				// In this case, the customer who has it checked-out wishes to return the book (requesting the state is changed to "available")
 				// If another customer has the book on-hold, the book's state will not be changed to "available" but rather to "on-hold" for that customer.
-				if (book_onhold_customerID == "") { // Nobody has the book on-hold
+				if (book.OnHoldCustomerID == "") { // Nobody has the book on-hold
 					book.State = "available"
-					book.Checkedout_customerID = ""
-					book.Time_updated = time.Now()
+					book.CheckedOutCustomerID = ""
+					book.TimeUpdated = time.Now()
 				} else { // Another customer has the book on-hold
 					book.State = "on-hold"
-					book.Checkedout_customerID = ""
-					book.Time_updated = time.Now()
+					book.CheckedOutCustomerID = ""
+					book.TimeUpdated = time.Now()
 				}
 			}
-			if (requested_state == "on-hold") {
+			if (requestedState == "on-hold") {
 				// In this case, the customer who has it checked-out wishes to place it on-hold.
 				// If another customer has the book on-hold, this state change cannot be done.
-				if (book_onhold_customerID == "") { // Nobody has the book on-hold
+				if (book.OnHoldCustomerID == "") { // Nobody has the book on-hold
 					book.State = "on-hold"
-					book.Onhold_customerID = request_customerID
-					book.Checkedout_customerID = ""
-					book.Time_updated = time.Now()
+					book.OnHoldCustomerID = requestCustomerID
+					book.CheckedOutCustomerID = ""
+					book.TimeUpdated = time.Now()
 				} else { // Another customer has the book on-hold
 					c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book on-hold."})
 				}
 			}
-			if (requested_state == "checked-out") {
+			if (requestedState == "checked-out") {
 				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "This customer already has this book checked-out."})
 			}
 		} else { // The request comes from a customer different from the one who has it checked-out
-			if (requested_state == "available") {
+			if (requestedState == "available") {
 				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book checked-out."})
 			}
-			if (requested_state == "on-hold") {
+			if (requestedState == "on-hold") {
 				// In this case, the book is checked-out and another customer requests to put it on-hold (meanwhile no other customer has it on-hold)
-				// We can update the Onhold_customerID to accomodate this request, but the book's state will remain unchanged (it stays as "checked-out")
-				if (book_onhold_customerID == "") { // Nobody has the book on-hold
-					book.Onhold_customerID = request_customerID
-					book.Time_updated = time.Now()
+				// We can update the OnHoldCustomerID to accomodate this request, but the book's state will remain unchanged (it stays as "checked-out")
+				if (book.OnHoldCustomerID == "") { // Nobody has the book on-hold
+					book.OnHoldCustomerID = requestCustomerID
+					book.TimeUpdated = time.Now()
 				} else { // Another customer has the book on-hold
 					c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. The book is checked-out, and another customer has it on-hold."})
 				}
 			}
-			if (requested_state == "checked-out") {
+			if (requestedState == "checked-out") {
 				c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Request failed. Another customer has the book checked-out. Consider trying to place it on-hold"})
 			}
 		}
@@ -250,4 +246,4 @@ func main() {
 	// DELETE
 		// curl localhost:8080/books/0000 --request "DELETE"
 	// PATCH
-		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"Requested_State": "checked-out", "CustomerID": "01"}'
+		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"RequestedState": "checked-out", "CustomerID": "01"}'
