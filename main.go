@@ -33,7 +33,7 @@ var mapOfBooks = map[string]*Book{
 }
 
 // GET (all books)
-func getAllBooks(c *gin.Context) {
+func GetAllBooks(c *gin.Context) {
 	// Make a slice containing all the values from mapOfBooks
 	var vals []*Book
 	
@@ -56,7 +56,7 @@ func bookByISBN(isbn string) (*Book, error) {
 }
 
 // GET (individual book)
-func getIndividualBook(c *gin.Context) {
+func GetIndividualBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 	book, err := bookByISBN(isbn)
 
@@ -75,7 +75,7 @@ type BookInput struct{
 }
 
 // POST
-func createBook(c *gin.Context) {
+func CreateBook(c *gin.Context) {
 	var newBookInput BookInput
 
 	if err := c.BindJSON(&newBookInput); err != nil {
@@ -89,7 +89,7 @@ func createBook(c *gin.Context) {
 }
 
 // DELETE
-func deleteBook(c *gin.Context) {
+func DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 	delete(mapOfBooks, isbn)
 
@@ -112,7 +112,7 @@ type Request struct{
 }
 
 // PATCH
-func updateBook(c *gin.Context) {
+func UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
 	book, err := bookByISBN(isbn)
@@ -226,11 +226,11 @@ func updateBook(c *gin.Context) {
 
 func main() {
 	router := gin.Default()
-	router.GET("/books", getAllBooks)
-	router.GET("/books/:isbn", getIndividualBook)
-	router.POST("/books", createBook)
-	router.DELETE("/books/:isbn", deleteBook)
-	router.PATCH("/books/:isbn", updateBook)
+	router.GET("/books", GetAllBooks)
+	router.GET("/books/:isbn", GetIndividualBook)
+	router.POST("/books", CreateBook)
+	router.DELETE("/books/:isbn", DeleteBook)
+	router.PATCH("/books/:isbn", UpdateBook)
 
 	router.Run("localhost:8080")
 }
