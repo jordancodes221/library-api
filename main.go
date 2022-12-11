@@ -93,9 +93,8 @@ func DeleteBook(c *gin.Context) {
 
 // The following struct is needed to handle PATCH requests
 type Request struct{
-	RequestedState string 		`json:"requestedstate"`
+	RequestedState 	string 		`json:"requestedstate"`
 	CustomerID 		string 		`json:"customerid"`
-
 }
 
 // PATCH
@@ -234,3 +233,4 @@ func main() {
 		// curl localhost:8080/books/0000 --request "DELETE"
 	// PATCH
 		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"RequestedState": "checked-out", "CustomerID": "01"}'
+		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @body2.json
