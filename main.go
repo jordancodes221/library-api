@@ -87,9 +87,23 @@ func CreateBook(c *gin.Context) {
 // DELETE
 func DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
-	delete(mapOfBooks, isbn)
-	c.Status(http.StatusNoContent) // 204 status code if successful
+
+	if _, ok := mapOfBooks[isbn]; ok {
+		delete(mapOfBooks, isbn)
+		c.Status(http.StatusNoContent) // 204 status code if successful
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."}) // 404 not found
+	}
 }
+
+
+
+
+
+
+
+
+
 
 // Checkout
 	// available --> checked-out
@@ -251,7 +265,7 @@ func main() {
 	// POST
 		// curl localhost:8080/books --include --header "Content-Type: application/json" -d @newBook.json --request "POST"
 	// DELETE
-		// curl localhost:8080/books/0000 --request "DELETE"
+		// curl localhost:8080/books/0005 --request "DELETE"
 	// PATCH
 		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"RequestedState": "checked-out", "CustomerID": "01"}'
 		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
