@@ -220,20 +220,6 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 			"checked-out": Checkout,
 			"on-hold": NoOperation,
 	},
-
-	// "available": {
-	// 	"available": NoOperation,
-	// 	"checked-out": Return,
-	// 	"on-hold": ReleaseHold,
-	// }, "checked-out": {
-	// 		"available": Checkout,
-	// 		"checked-out": NoOperation,
-	// 		"on-hold": Checkout,
-	// }, "on-hold": {
-	// 		"available": PlaceHold,
-	// 		"checked-out": Conflict,
-	// 		"on-hold": NoOperation,
-	// },
 }
 
 // PATCH
@@ -264,7 +250,6 @@ func UpdateBook(c *gin.Context) {
 	}
 
 	// Call the appropriate function from  the action table, and catch possible errors
-	// used _ on the left side of the pair, because actionTable function is called for its side effects on currentBook
 	book, err = actionTable[currentState][incomingState](book, incomingRequest)
 
 	if err != nil { // i.e if there is an error
@@ -285,23 +270,7 @@ func UpdateBook(c *gin.Context) {
 	return
 }
 
-// // For de-bugging
-// var current = mapOfBooks["0001"] // checked-out by customer 01
-// var incoming *Book = &Book{"0000", "checked-out", "", "02", "0001-01-01 00:00:00 +0000 UTC", "0001-01-01 00:00:00 +0000 UTC"}
-
 func main() {
-	// For de-bugging
-	// _, err := actionTable[current.State][incoming.State](current, incoming)
-	// // _, err := Checkout(current, incoming)
-	// if err == nil {
-	// 	fmt.Println("CURRENT")
-	// 	fmt.Println(current.State, current.CheckedOutCustomerID)
-	// 	fmt.Println("INCOMING")
-	// 	fmt.Println(incoming.State, incoming.CheckedOutCustomerID)
-	// } else {
-	// 	fmt.Println(err)
-	// }
-
 	router := gin.Default()
 	router.GET("/books", GetAllBooks)
 	router.GET("/books/:isbn", GetIndividualBook)
