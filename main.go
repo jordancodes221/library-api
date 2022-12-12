@@ -111,7 +111,7 @@ func DeleteBook(c *gin.Context) {
 	// available --> checked-out
 	// on-hold --> checked-out
 	// checked-out --> checked-out
-func Checkout(c *gin.Context, currentBook *Book, incomingBook *Book) {
+func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (currentBook.State == "available") {
 		currentBook.State = "checked-out" // or should we use incomingBook.State? 
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
@@ -125,7 +125,7 @@ func Checkout(c *gin.Context, currentBook *Book, incomingBook *Book) {
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "IDs do not match."})
+			return nil, errors.New("ID's do not match.")
 		}
 	}
 
@@ -133,21 +133,23 @@ func Checkout(c *gin.Context, currentBook *Book, incomingBook *Book) {
 		if (currentBook.CheckedOutCustomerID == incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
 			// pass
 		} else {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "IDs do not match."})
+			return nil, errors.New("ID's do not match.")
 		}
 	}
+
+	return currentBook, nil
 }
 
 // Conflict
 	// checked-out --> on-hold
-func Conflict(c *gin.Context, currentBook *Book, incomingBook *Book) {
-	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid state requested"})
+func Conflict(currentBook *Book, incomingBook *Book) (*Book, error) {
+	return nil, errors.New("Invalid state transfer requested.")
 }
 
 // PlaceHold
 	// available --> on-hold
 	// on-hold --> on-hold
-func PlaceHold(c *gin.Context, currentBook *Book, incomingBook *Book) {
+func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (currentBook.State == "available") {
 		currentBook.State = "on-hold"
 		currentBook.OnHoldCustomerID = incomingBook.OnHoldCustomerID
@@ -158,47 +160,53 @@ func PlaceHold(c *gin.Context, currentBook *Book, incomingBook *Book) {
 		if (currentBook.OnHoldCustomerID == incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
 		} else {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "IDs do not match."})
+			return nil, errors.New("ID's do not match.")
 		}
 	}
+
+	return currentBook, nil
 }
 
 // ReleaseHold
 	// on-hold --> available (when ID's match)
-func ReleaseHold(c *gin.Context, currentBook *Book, incomingBook *Book) {
+func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (currentBook.State == "on-hold") {
 		if (currentBook.OnHoldCustomerID == incomingBook.OnHoldCustomerID) {
 			currentBook.State = "available"
 			currentBook.OnHoldCustomerID = "" // need this, or leave it as who most recently had it on hold?
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "IDs do not match."})
+			return nil, errors.New("ID's do not match.")
 		}
 	}
+
+	return currentBook, nil
 }
 
 // Return
 	// checked-out --> available (when ID's match)
-func Return(c *gin.Context, currentBook *Book, incomingBook *Book) {
+func Return(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (currentBook.State == "checked-out") {
 		if (currentBook.CheckedOutCustomerID == incomingBook.CheckedOutCustomerID) {
 			currentBook.State = "available"
 			currentBook.CheckedOutCustomerID = "" // need this, or leave it as who most recently had it on hold?
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "IDs do not match."})
+			return nil, errors.New("ID's do not match.")
 		}
 	}
+
+	return currentBook, nil
 }
 
 // NoOperation
 	// available --> available
 	// on-hold --> on-hold (when ID's match)
-func NoOperation(c *gin.Context, currentBook *Book, incomingBook *Book) {
-	// pass
+func NoOperation(currentBook *Book, incomingBook *Book) (*Book, error) {
+	return currentBook, nil
 }
 
-var actionTable = map[string]map[string]func(c *gin.Context, currentBook *Book, incomingBook *Book) {
+var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Book) (*Book, error) {
 	"available": {
 		"available": NoOperation,
 		"checked-out": Return,
@@ -242,7 +250,7 @@ func UpdateBook(c *gin.Context) {
 	}
 
 	// Call the appropriate function from the action table
-	actionTable[currentState][incomingState](c, book, incomingRequest)
+	actionTable[currentState][incomingState](book, incomingRequest)
 
 	c.IndentedJSON(http.StatusOK, book)
 }
