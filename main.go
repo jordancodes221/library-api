@@ -88,12 +88,14 @@ func CreateBook(c *gin.Context) {
 func DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	if _, ok := mapOfBooks[isbn]; ok {
-		delete(mapOfBooks, isbn)
-		c.Status(http.StatusNoContent) // 204 status code if successful
-	} else {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."}) // 404 not found
+	_, err := bookByISBN(isbn)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."})
+		return
 	}
+
+	delete(mapOfBooks, isbn)
+	c.Status(http.StatusNoContent) // 204 status code if successful
 }
 
 
