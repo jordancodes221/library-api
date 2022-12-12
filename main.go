@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"time"
+	// "fmt"
 	// "encoding/json"
 	// "strconv"
-	// "fmt"
 )
 
 type Book struct{
@@ -209,17 +209,31 @@ func NoOperation(currentBook *Book, incomingBook *Book) (*Book, error) {
 var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Book) (*Book, error) {
 	"available": {
 		"available": NoOperation,
-		"checked-out": Return,
-		"on-hold": ReleaseHold,
+		"checked-out": Checkout,
+		"on-hold": PlaceHold,
 	}, "checked-out": {
-			"available": Checkout,
-			"checked-out": NoOperation,
-			"on-hold": Checkout,
+			"available": Return,
+			"checked-out": Checkout,
+			"on-hold": Conflict,
 	}, "on-hold": {
-			"available": PlaceHold,
-			"checked-out": Conflict,
+			"available": ReleaseHold,
+			"checked-out": Checkout,
 			"on-hold": NoOperation,
 	},
+
+	// "available": {
+	// 	"available": NoOperation,
+	// 	"checked-out": Return,
+	// 	"on-hold": ReleaseHold,
+	// }, "checked-out": {
+	// 		"available": Checkout,
+	// 		"checked-out": NoOperation,
+	// 		"on-hold": Checkout,
+	// }, "on-hold": {
+	// 		"available": PlaceHold,
+	// 		"checked-out": Conflict,
+	// 		"on-hold": NoOperation,
+	// },
 }
 
 // PATCH
@@ -249,13 +263,45 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	// Call the appropriate function from the action table
-	actionTable[currentState][incomingState](book, incomingRequest)
+	// Call the appropriate function from  the action table, and catch possible errors
+	// used _ on the left side of the pair, because actionTable function is called for its side effects on currentBook
+	book, err = actionTable[currentState][incomingState](book, incomingRequest)
+
+	if err != nil { // i.e if there is an error
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "message"})
+		return
+		// if err == errors.New("ID's do not match.") {
+		// 	c.IndentedJSON(http.StatusBadRequest,  gin.H{"ERROR": "ID's do not match."})
+		// 	return
+		// }
+
+		// if err == errors.New("Invalid state transfer requested.") {
+		// 	c.IndentedJSON(http.StatusBadRequest,  gin.H{"ERROR": "Invalid state transfer requested."})
+		// 	return
+		// }
+	}
 
 	c.IndentedJSON(http.StatusOK, book)
+	return
 }
 
+// // For de-bugging
+// var current = mapOfBooks["0001"] // checked-out by customer 01
+// var incoming *Book = &Book{"0000", "checked-out", "", "02", "0001-01-01 00:00:00 +0000 UTC", "0001-01-01 00:00:00 +0000 UTC"}
+
 func main() {
+	// For de-bugging
+	// _, err := actionTable[current.State][incoming.State](current, incoming)
+	// // _, err := Checkout(current, incoming)
+	// if err == nil {
+	// 	fmt.Println("CURRENT")
+	// 	fmt.Println(current.State, current.CheckedOutCustomerID)
+	// 	fmt.Println("INCOMING")
+	// 	fmt.Println(incoming.State, incoming.CheckedOutCustomerID)
+	// } else {
+	// 	fmt.Println(err)
+	// }
+
 	router := gin.Default()
 	router.GET("/books", GetAllBooks)
 	router.GET("/books/:isbn", GetIndividualBook)
@@ -278,5 +324,6 @@ func main() {
 		// curl localhost:8080/books/0005 --request "DELETE"
 	// PATCH
 		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"RequestedState": "checked-out", "CustomerID": "01"}'
+		// curl -X PATCH localhost:8080/books/0001 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
 		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
 			// in the 2nd command, we can change the endpoint because the individual book can be gotten from the isbn contained in the json file
