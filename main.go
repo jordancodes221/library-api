@@ -206,6 +206,7 @@ func NoOperation(currentBook *Book, incomingBook *Book) (*Book, error) {
 	return currentBook, nil
 }
 
+// First key is current state, 2nd key is incoming state
 var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Book) (*Book, error) {
 	"available": {
 		"available": NoOperation,
@@ -218,7 +219,7 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 	}, "on-hold": {
 			"available": ReleaseHold,
 			"checked-out": Checkout,
-			"on-hold": NoOperation,
+			"on-hold": PlaceHold,
 	},
 }
 
@@ -245,7 +246,7 @@ func UpdateBook(c *gin.Context) {
 
 	// Input checking
 	if (incomingState != "available") && (incomingState != "on-hold") && (incomingState != "checked-out") {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid state requested."})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid input. Incoming does not contain a valid state."})
 		return
 	}
 
@@ -253,17 +254,8 @@ func UpdateBook(c *gin.Context) {
 	book, err = actionTable[currentState][incomingState](book, incomingRequest)
 
 	if err != nil { // i.e if there is an error
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "message"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
-		// if err == errors.New("ID's do not match.") {
-		// 	c.IndentedJSON(http.StatusBadRequest,  gin.H{"ERROR": "ID's do not match."})
-		// 	return
-		// }
-
-		// if err == errors.New("Invalid state transfer requested.") {
-		// 	c.IndentedJSON(http.StatusBadRequest,  gin.H{"ERROR": "Invalid state transfer requested."})
-		// 	return
-		// }
 	}
 
 	c.IndentedJSON(http.StatusOK, book)
@@ -292,7 +284,4 @@ func main() {
 	// DELETE
 		// curl localhost:8080/books/0005 --request "DELETE"
 	// PATCH
-		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d '{"RequestedState": "checked-out", "CustomerID": "01"}'
 		// curl -X PATCH localhost:8080/books/0001 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
-		// curl -X PATCH localhost:8080/books/0000 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
-			// in the 2nd command, we can change the endpoint because the individual book can be gotten from the isbn contained in the json file
