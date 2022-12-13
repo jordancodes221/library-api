@@ -98,15 +98,6 @@ func DeleteBook(c *gin.Context) {
 	c.Status(http.StatusNoContent) // 204 status code if successful
 }
 
-
-
-
-
-
-
-
-
-
 // Checkout
 	// available --> checked-out
 	// on-hold --> checked-out
@@ -173,7 +164,7 @@ func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (currentBook.State == "on-hold") {
 		if (currentBook.OnHoldCustomerID == incomingBook.OnHoldCustomerID) {
 			currentBook.State = "available"
-			currentBook.OnHoldCustomerID = "" // need this, or leave it as who most recently had it on hold?
+			currentBook.OnHoldCustomerID = ""
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
 			return nil, errors.New("ID's do not match.")
@@ -227,7 +218,6 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 func UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	// This section could be removed if we change the resource PATCH acts on to be just /books, and we get the right book by the isbn in the incoming Book struct request
 	book, err := bookByISBN(isbn)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."})
@@ -253,7 +243,7 @@ func UpdateBook(c *gin.Context) {
 	// Call the appropriate function from  the action table, and catch possible errors
 	book, err = actionTable[currentState][incomingState](book, incomingRequest)
 
-	if err != nil { // i.e if there is an error
+	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
