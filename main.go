@@ -82,6 +82,12 @@ func CreateBook(c *gin.Context) {
 		return // BindJSON handles the error response
 	}
 
+	// if the book already exists
+	if _, ok := mapOfBooks[newBook.ISBN]; ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Book already exists."})
+		return
+	}
+
 	newBook.TimeCreated = time.Now().String()
 	newBook.TimeUpdated = time.Now().String()
 
