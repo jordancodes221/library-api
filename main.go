@@ -69,8 +69,7 @@ func GetIndividualBook(c *gin.Context) {
 }
 
 // POST
-	// TODO: Add error checking to see if book already exists
-	// TODO: Add error checking to ensure state is valid
+	// TODO: Add input-checking to ensure state is valid ("available", "on-hold", "checked-out")
 	// TODO: Checking that ID's match the state (i.e. 
 			// no ID's if state is available, 
 			// OnHoldCustomerID only if state is on-hold
