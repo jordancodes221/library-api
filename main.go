@@ -69,7 +69,6 @@ func GetIndividualBook(c *gin.Context) {
 }
 
 // POST
-	// TODO: Add input-checking to ensure state is valid ("available", "on-hold", "checked-out")
 	// TODO: Checking that ID's match the state (i.e. 
 			// no ID's if state is available, 
 			// OnHoldCustomerID only if state is on-hold
@@ -86,6 +85,56 @@ func CreateBook(c *gin.Context) {
 	if _, ok := mapOfBooks[newBook.ISBN]; ok {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Book already exists."})
 		return
+	}
+
+	// check if state is valid
+	if (newBook.State != "available") && (newBook.State != "on-hold") && (newBook.State != "checked-out") {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid state in created book."})
+		return
+	}
+
+	// if book is available, it cannot have an on-hold or checked-out customer ID
+	if (newBook.State == "available") {
+		if (newBook.OnHoldCustomerID != "") && (newBook.CheckedOutCustomerID == "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Cannot have an on-hold customer ID on an available book."})
+			return
+		}
+
+		if (newBook.OnHoldCustomerID == "") && (newBook.CheckedOutCustomerID != "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Cannot have checked-out customer ID on an available book."})
+			return
+		}
+
+		if (newBook.OnHoldCustomerID != "") && (newBook.CheckedOutCustomerID != "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Cannot have an on-hold or checked-out customer ID on an available book."})
+			return
+		}
+	}
+
+	// If new book is on-hold, ensure there is an on-hold customer ID.
+	if (newBook.State == "on-hold") {
+		if (newBook.OnHoldCustomerID == "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing on-hold customer ID."})
+			return
+		}
+
+		if (newBook.CheckedOutCustomerID != "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Cannot have a checked-out customer ID on an on-hold book."})
+			return
+		}
+	}
+
+	// If new book is checked-out, ensure there is a checked-out customer ID.
+	if (newBook.State == "checked-out") {
+		if (newBook.CheckedOutCustomerID == "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing checked-out customer ID."})
+			return
+		}
+
+		if (newBook.OnHoldCustomerID != "") {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Cannot have an on-hold customer ID on a checked-out book."})
+			return
+		}
 	}
 
 	newBook.TimeCreated = time.Now().String()
@@ -248,7 +297,7 @@ func UpdateBook(c *gin.Context) {
 
 	// Input checking
 	if (incomingState != "available") && (incomingState != "on-hold") && (incomingState != "checked-out") {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid input. Incoming does not contain a valid state."})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid state in incoming request."})
 		return
 	}
 
