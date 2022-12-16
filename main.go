@@ -78,7 +78,8 @@ func CreateBook(c *gin.Context) {
 	var newBook Book
 
 	if err := c.BindJSON(&newBook); err != nil {
-		return // BindJSON handles the error response
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid type in JSON input."})
+		return
 	}
 
 	// if the book already exists
