@@ -31,14 +31,15 @@ var bookInstance4 Book = Book{"0004", "checked-out", 	"", 	"01", 		time.Now().St
 var bookInstance5 Book = Book{"0005", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
 var bookInstance6 Book = Book{"0006", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
 var bookInstance7 Book = Book{"0007", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
+var bookInstance8 Book = Book{"0008", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
 // There is no checked-out --> on-hold (no match) because any request from checked-out to on-hold is invalid.
 
-var bookInstance8 Book =  Book{"0008", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available
-var bookInstance9 Book =  Book{"0009", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available (no match)
-var bookInstance10 Book = Book{"0010", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
-var bookInstance11 Book = Book{"0011", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
-var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
-var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
+var bookInstance9 Book =  Book{"0009", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance10 Book = Book{"0010", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available (no match)
+var bookInstance11 Book = Book{"0011", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
+var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
+var bookInstance14 Book = Book{"0014", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
 
 var mapOfBooks = map[string]*Book{
 	"0000" : &bookInstance0,
@@ -50,13 +51,14 @@ var mapOfBooks = map[string]*Book{
 	"0005" : &bookInstance5,
 	"0006" : &bookInstance6,
 	"0007" : &bookInstance7,
-
 	"0008" : &bookInstance8,
+
 	"0009" : &bookInstance9,
 	"0010" : &bookInstance10,
 	"0011" : &bookInstance11,
 	"0012" : &bookInstance12,
 	"0013" : &bookInstance13,
+	"0014" : &bookInstance14,
 }
 
 // GET (all books)
