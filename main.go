@@ -22,14 +22,41 @@ type Book struct{
 }
 
 // Test data
-var bookInstance0 Book = Book{"0000", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // not on-hold, not checked-out
-var bookInstance1 Book = Book{"0001", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // checked-out, not on-hold
-var bookInstance2 Book = Book{"0002", "checked-out", 	"02", 	"01", 	time.Now().String(), time.Time{}.String()} // checked-out by one customer, on-hold by another
+var bookInstance0 Book = Book{"0000", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance1 Book = Book{"0001", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance2 Book = Book{"0002", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold
+
+var bookInstance3 Book = Book{"0003", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance4 Book = Book{"0004", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Available (no match)
+var bookInstance5 Book = Book{"0005", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance6 Book = Book{"0006", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
+var bookInstance7 Book = Book{"0007", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
+// There is no checked-out --> on-hold (no match) because any request from checked-out to on-hold is invalid.
+
+var bookInstance8 Book =  Book{"0008", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance9 Book =  Book{"0009", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available (no match)
+var bookInstance10 Book = Book{"0010", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance11 Book = Book{"0011", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
+var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
+var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
 
 var mapOfBooks = map[string]*Book{
 	"0000" : &bookInstance0,
 	"0001" : &bookInstance1,
 	"0002" : &bookInstance2,
+
+	"0003" : &bookInstance3,
+	"0004" : &bookInstance4,
+	"0005" : &bookInstance5,
+	"0006" : &bookInstance6,
+	"0007" : &bookInstance7,
+
+	"0008" : &bookInstance8,
+	"0009" : &bookInstance9,
+	"0010" : &bookInstance10,
+	"0011" : &bookInstance11,
+	"0012" : &bookInstance12,
+	"0013" : &bookInstance13,
 }
 
 // GET (all books)
@@ -68,11 +95,20 @@ func GetIndividualBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, book)
 }
 
+// Input checking
+	// should take a struct and do various input checks on it
+	// returnn a bool
+func inputOK(book *Book) bool {
+	// is state valid? (state == available, on-hold, or checked-out)
+	// if state == available, cannot have on-hold or checked-out ID's
+	// if state == on-hold, must have on-hold ID and cannot have checked-out ID
+	// if state == checked-out, must have checked-out ID and cannot have on-hold ID
+	// Add something to check ISBN number format (see: https://pkg.go.dev/github.com/moraes/isbn)
+	return true
+}
+
+
 // POST
-	// TODO: Checking that ID's match the state (i.e. 
-			// no ID's if state is available, 
-			// OnHoldCustomerID only if state is on-hold
-			// CheckedOutCustomerID only if state is checked-out
 func CreateBook(c *gin.Context) {
 	var newBook Book
 
@@ -111,7 +147,7 @@ func CreateBook(c *gin.Context) {
 		}
 	}
 
-	// If new book is on-hold, ensure there is an on-hold customer ID.
+	// If new book is on-hold, ensure there is an on-hold customer ID and no checked-out ID
 	if (newBook.State == "on-hold") {
 		if (newBook.OnHoldCustomerID == "") {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing on-hold customer ID."})
@@ -124,7 +160,7 @@ func CreateBook(c *gin.Context) {
 		}
 	}
 
-	// If new book is checked-out, ensure there is a checked-out customer ID.
+	// If new book is checked-out, ensure there is a checked-out customer ID and no on-hold ID
 	if (newBook.State == "checked-out") {
 		if (newBook.CheckedOutCustomerID == "") {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing checked-out customer ID."})
