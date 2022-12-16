@@ -157,7 +157,7 @@ func CreateBook(c *gin.Context) {
 
 	// Make sure ISBN is not already in-use
 	if _, ok := mapOfBooks[newBook.ISBN]; ok {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Book already exists."})
+		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
 
