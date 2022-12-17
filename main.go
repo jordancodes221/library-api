@@ -40,6 +40,8 @@ var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	"", 		time.Now().Strin
 var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
 var bookInstance14 Book = Book{"0014", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
 
+var bookInstance15 Book = Book{"0015", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> This is the book to be deleted in testing
+
 var mapOfBooks = map[string]*Book{
 	"0000" : &bookInstance0,
 	"0001" : &bookInstance1,
@@ -58,6 +60,8 @@ var mapOfBooks = map[string]*Book{
 	"0012" : &bookInstance12,
 	"0013" : &bookInstance13,
 	"0014" : &bookInstance14,
+
+	"0015" : &bookInstance15,
 }
 
 // GET (all books)
