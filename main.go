@@ -11,34 +11,34 @@ import (
 )
 
 type Book struct{
-	ISBN 				string 	`json:"isbn"`
-	State 				string 	`json:"state"`
+	ISBN 			string 	`json:"isbn"`
+	State 			string 	`json:"state"`
 
-	OnHoldCustomerID 		string 	`json:"onholdcustomerid"` 	// re-named from Onhold_customerID
-	CheckedOutCustomerID 		string 	`json:"checkedoutcustomerid"` // re-named from CheckedOutCustomerID
+	OnHoldCustomerID 	string 	`json:"onholdcustomerid"`
+	CheckedOutCustomerID 	string 	`json:"checkedoutcustomerid"`
 
-	TimeCreated 			string 	`json:"timecreated"` // re-named from Time_created
-	TimeUpdated  			string 	`json:"timeupdated"` // re-named from Time_updated
+	TimeCreated 		string 	`json:"timecreated"`
+	TimeUpdated  		string 	`json:"timeupdated"`
 }
 
 // Test data
-var bookInstance0 Book = Book{"0000", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available
-var bookInstance1 Book = Book{"0001", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
-var bookInstance2 Book = Book{"0002", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold
+var bookInstance0 Book = Book{"0000", "available", 	"", 	"", 	time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance1 Book = Book{"0001", "available", 	"", 	"", 	time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance2 Book = Book{"0002", "available", 	"", 	"", 	time.Now().String(), time.Time{}.String()} // --> On-hold
 
-var bookInstance3 Book = Book{"0003", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Available
-var bookInstance4 Book = Book{"0004", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Available (no match)
-var bookInstance5 Book = Book{"0005", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
-var bookInstance6 Book = Book{"0006", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
-var bookInstance7 Book = Book{"0007", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
-var bookInstance8 Book = Book{"0008", "checked-out", 	"", 	"01", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
+var bookInstance3 Book = Book{"0003", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance4 Book = Book{"0004", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // --> Available (no match)
+var bookInstance5 Book = Book{"0005", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance6 Book = Book{"0006", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
+var bookInstance7 Book = Book{"0007", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // --> On-hold 
+var bookInstance8 Book = Book{"0008", "checked-out", 	"", 	"01", 	time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
 
-var bookInstance9 Book =  Book{"0009", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available
-var bookInstance10 Book = Book{"0010", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Available (no match)
-var bookInstance11 Book = Book{"0011", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out
-var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
-var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold 
-var bookInstance14 Book = Book{"0014", "on-hold", 	"01", 	"", 		time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
+var bookInstance9 Book =  Book{"0009", "on-hold", 	"01", 	"", 	time.Now().String(), time.Time{}.String()} // --> Available
+var bookInstance10 Book = Book{"0010", "on-hold", 	"01", 	"", 	time.Now().String(), time.Time{}.String()} // --> Available (no match)
+var bookInstance11 Book = Book{"0011", "on-hold", 	"01", 	"", 	time.Now().String(), time.Time{}.String()} // --> Checked-out
+var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	"", 	time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
+var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	"", 	time.Now().String(), time.Time{}.String()} // --> On-hold 
+var bookInstance14 Book = Book{"0014", "on-hold", 	"01", 	"", 	time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
 
 var bookInstance15 Book = Book{"0015", "available", 	"", 	"", 		time.Now().String(), time.Time{}.String()} // --> This is the book to be deleted in testing
 
