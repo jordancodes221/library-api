@@ -15,7 +15,7 @@ type Book struct{
 	State 					string 	`json:"state"`
 
 	OnHoldCustomerID 		string 	`json:"onholdcustomerid"` 	// re-named from Onhold_customerID
-	CheckedOutCustomerID 	string 	`json:"checkedoutcustomerid"` // re-named from CheckedOutCustomerID
+	CheckedOutCustomerID 		string 	`json:"checkedoutcustomerid"` // re-named from CheckedOutCustomerID
 
 	TimeCreated 			string 	`json:"timecreated"` // re-named from Time_created
 	TimeUpdated  			string 	`json:"timeupdated"` // re-named from Time_updated
