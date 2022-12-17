@@ -193,6 +193,8 @@ func DeleteBook(c *gin.Context) {
 	c.Status(http.StatusNoContent) // 204 status code if successful
 }
 
+var NoMatchError error = errors.New("ID's do not match.")
+
 // Checkout
 	// available --> checked-out
 	// on-hold --> checked-out
@@ -211,7 +213,7 @@ func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
-			return nil, errors.New("ID's do not match.")
+			return nil, NoMatchError
 		}
 	}
 
@@ -219,7 +221,7 @@ func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
 		if (currentBook.CheckedOutCustomerID == incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
 			// pass
 		} else {
-			return nil, errors.New("ID's do not match.")
+			return nil, NoMatchError
 		}
 	}
 
@@ -246,7 +248,7 @@ func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 		if (currentBook.OnHoldCustomerID == incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
 		} else {
-			return nil, errors.New("ID's do not match.")
+			return nil, NoMatchError
 		}
 	}
 
@@ -262,7 +264,7 @@ func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 			currentBook.OnHoldCustomerID = ""
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
-			return nil, errors.New("ID's do not match.")
+			return nil, NoMatchError
 		}
 	}
 
@@ -278,7 +280,7 @@ func Return(currentBook *Book, incomingBook *Book) (*Book, error) {
 			currentBook.CheckedOutCustomerID = "" // need this, or leave it as who most recently had it on hold?
 			currentBook.TimeUpdated = time.Now().String()
 		} else {
-			return nil, errors.New("ID's do not match.")
+			return nil, NoMatchError
 		}
 	}
 
