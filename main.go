@@ -185,7 +185,7 @@ func DeleteBook(c *gin.Context) {
 
 	_, err := bookByISBN(isbn)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": err.Error()})
 		return
 	}
 
