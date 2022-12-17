@@ -11,8 +11,8 @@ import (
 )
 
 type Book struct{
-	ISBN 					string 	`json:"isbn"`
-	State 					string 	`json:"state"`
+	ISBN 				string 	`json:"isbn"`
+	State 				string 	`json:"state"`
 
 	OnHoldCustomerID 		string 	`json:"onholdcustomerid"` 	// re-named from Onhold_customerID
 	CheckedOutCustomerID 		string 	`json:"checkedoutcustomerid"` // re-named from CheckedOutCustomerID
