@@ -155,7 +155,7 @@ func CreateBook(c *gin.Context) {
 
 	// Unmarshal
 	if err := c.BindJSON(&newBook); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid type in JSON input."})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
@@ -323,6 +323,7 @@ func UpdateBook(c *gin.Context) {
 	// Unmarshal JSON
 	var incomingRequest *Book
 	if err := c.BindJSON(&incomingRequest); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
