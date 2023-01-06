@@ -1,8 +1,7 @@
 {
-  "isbn": "0001",
+  "isbn": "00",
   "state": "checked-out",
 
-  "onholdcustomerid": "",
   "checkedoutcustomerid": "02",
 
   "timecreated": "0001-01-01 00:00:00 +0000 UTC",

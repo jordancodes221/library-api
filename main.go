@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"time"
-	// "fmt"
-	// "encoding/json"
+	"fmt"
+	"encoding/json"
 	// "strconv"
 )
 
@@ -21,50 +21,15 @@ type Book struct{
 	TimeUpdated  		*time.Time	`json:"timeupdated"`
 }
 
-
-
 // Test data
-	// TODO: Find a way to instantiate the books with the new JSON ptr fields
-// var bookInstance0 Book = Book{"0000", "available", 	nil,  nil, 	time.Now().String(), time.Time{}.String()} // --> Available
-// var bookInstance1 Book = Book{"0001", "available", 	nil, 	nil, 	time.Now().String(), time.Time{}.String()} // --> Checked-out
-// var bookInstance2 Book = Book{"0002", "available", 	nil, 	nil, 	time.Now().String(), time.Time{}.String()} // --> On-hold
-
-// var bookInstance3 Book = Book{"0003", "checked-out", 	nil, 	"01", 	time.Now().String(), time.Time{}.String()} // --> Available
-// var bookInstance4 Book = Book{"0004", "checked-out", 	nil, 	"01", 	time.Now().String(), time.Time{}.String()} // --> Available (no match)
-// var bookInstance5 Book = Book{"0005", "checked-out", 	nil, 	"01", 	time.Now().String(), time.Time{}.String()} // --> Checked-out
-// var bookInstance6 Book = Book{"0006", "checked-out", 	nil, 	"01", 	time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
-// var bookInstance7 Book = Book{"0007", "checked-out", 	nil, 	"01", 	time.Now().String(), time.Time{}.String()} // --> On-hold 
-// var bookInstance8 Book = Book{"0008", "checked-out", 	nil, 	"01", 	time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
-
-// var bookInstance9 Book =  Book{"0009", "on-hold", 	"01", 	nil, 	time.Now().String(), time.Time{}.String()} // --> Available
-// var bookInstance10 Book = Book{"0010", "on-hold", 	"01", 	nil, 	time.Now().String(), time.Time{}.String()} // --> Available (no match)
-// var bookInstance11 Book = Book{"0011", "on-hold", 	"01", 	nil, 	time.Now().String(), time.Time{}.String()} // --> Checked-out
-// var bookInstance12 Book = Book{"0012", "on-hold", 	"01", 	nil, 	time.Now().String(), time.Time{}.String()} // --> Checked-out (no match)
-// var bookInstance13 Book = Book{"0013", "on-hold", 	"01", 	nil, 	time.Now().String(), time.Time{}.String()} // --> On-hold 
-// var bookInstance14 Book = Book{"0014", "on-hold", 	"01", 	nil, 	time.Now().String(), time.Time{}.String()} // --> On-hold (no match)
-
-// var bookInstance15 Book = Book{"0015", "available", 	nil, 	nil, 	time.Now().String(), time.Time{}.String()} // --> This is the book to be deleted in testing
+var instanceISBN string = "00"
+var instanceState string = "available"
+var instanceTimeCreated time.Time = time.Now()
+var instanceTimeUpdated time.Time = time.Now()
+var bookInstance00 Book = Book{&instanceISBN, &instanceState, nil, nil, &instanceTimeCreated, &instanceTimeUpdated}
 
 var mapOfBooks = map[string]*Book{
-	// "0000" : &bookInstance0,
-	// "0001" : &bookInstance1,
-	// "0002" : &bookInstance2,
-
-	// "0003" : &bookInstance3,
-	// "0004" : &bookInstance4,
-	// "0005" : &bookInstance5,
-	// "0006" : &bookInstance6,
-	// "0007" : &bookInstance7,
-	// "0008" : &bookInstance8,
-
-	// "0009" : &bookInstance9,
-	// "0010" : &bookInstance10,
-	// "0011" : &bookInstance11,
-	// "0012" : &bookInstance12,
-	// "0013" : &bookInstance13,
-	// "0014" : &bookInstance14,
-
-	// "0015" : &bookInstance15,
+	"00" : &bookInstance00,
 }
 
 // GET (all books)
@@ -103,55 +68,6 @@ func GetIndividualBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, book)
 }
 
-// Input checking
-// func inputCheck(book *Book) error {
-// 	// Consider adding something to check ISBN number format (see: https://pkg.go.dev/github.com/moraes/isbn)
-
-// 	// check if state is valid
-// 	if (book.State != "available") && (book.State != "on-hold") && (book.State != "checked-out") {
-// 		return errors.New("Invalid state in created book.")
-// 	}
-
-// 	// if book is available, it cannot have an on-hold or checked-out customer ID
-// 	if (book.State == "available") {
-// 		if (book.OnHoldCustomerID != "") && (book.CheckedOutCustomerID == "") {
-// 			return errors.New("Cannot have an on-hold customer ID on an available book.")
-// 		}
-
-// 		if (book.OnHoldCustomerID == "") && (book.CheckedOutCustomerID != "") {
-// 			return errors.New("Cannot have checked-out customer ID on an available book.")
-// 		}
-
-// 		if (book.OnHoldCustomerID != "") && (book.CheckedOutCustomerID != "") {
-// 			return errors.New("Cannot have an on-hold or checked-out customer ID on an available book.")
-// 		}
-// 	}
-
-// 	// If new book is on-hold, ensure there is an on-hold customer ID and no checked-out ID
-// 	if (book.State == "on-hold") {
-// 		if (book.OnHoldCustomerID == "") {
-// 			return errors.New("Missing on-hold customer ID.")
-// 		}
-
-// 		if (book.CheckedOutCustomerID != "") {
-// 			return errors.New("Cannot have a checked-out customer ID on an on-hold book.")
-// 		}
-// 	}
-
-// 	// If new book is checked-out, ensure there is a checked-out customer ID and no on-hold ID
-// 	if (book.State == "checked-out") {
-// 		if (book.CheckedOutCustomerID == "") {
-// 			return errors.New("Missing checked-out customer ID.")
-// 		}
-
-// 		if (book.OnHoldCustomerID != "") {
-// 			return errors.New("Cannot have an on-hold customer ID on a checked-out book.")
-// 		}
-// 	}
-
-// 	return nil
-// }
-
 // POST
 func CreateBook(c *gin.Context) {
 	var newBook Book
@@ -167,12 +83,6 @@ func CreateBook(c *gin.Context) {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
-
-	// // Input checking
-	// if err := inputCheck(&newBook); err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-	// 	return
-	// }
 
 	*newBook.TimeCreated = time.Now()
 	*newBook.TimeUpdated = time.Now()
@@ -203,10 +113,16 @@ var NoMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
+	fmt.Println("CHECKING OUT...")
 	if (*currentBook.State == "available") {
+		fmt.Println("CHECKING OUT... CURRENT STATE IS AVAILABLE")
 		*currentBook.State = "checked-out" // or should we use incomingBook.State? 
+		fmt.Println("FIRST LINE COMPLETE")
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-		*currentBook.TimeUpdated = time.Now()
+		fmt.Println("SECOND LINE COMPLETE")
+		newTimeUpdated := time.Now()
+		*currentBook.TimeUpdated = newTimeUpdated
+		fmt.Println("THIRD LINE COMPLETE")
 	}
 
 	if (*currentBook.State == "on-hold") {
@@ -316,6 +232,7 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 
 // PATCH
 func UpdateBook(c *gin.Context) {
+	fmt.Println("\nUPDATE BOOK CALLED")
 	isbn := c.Param("isbn")
 
 	// Ensure book to be updated exists
@@ -325,29 +242,54 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	// Unmarshal JSON
-	var incomingRequest *Book
-	if err := c.BindJSON(&incomingRequest); err != nil {
+	fmt.Println("BEGINNING BOOK AS MAP DECODING")
+
+	incomingBookAsMap := map[string]interface{}{}
+	dec := json.NewDecoder(c.Request.Body)
+	if err := dec.Decode(&incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
-	// Create variables for the 2 states - current and incoming
-	currentState := book.State
-	incomingState := incomingRequest.State
+	fmt.Println("ENDING BOOK AS MAP DECODING")
 
-	// // Input checking
-	// if (incomingState != "available") && (incomingState != "on-hold") && (incomingState != "checked-out") {
-	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Invalid state in incoming request."})
-	// 	return
-	// }
+	fmt.Println("\nPRINTING BOOK AS MAP...")
+	fmt.Println("")
+	fmt.Println(incomingBookAsMap)
+	fmt.Println("")
+	fmt.Println("\nDONE PRINTING BOOK AS MAP.")
 
-	// Call the appropriate function from  the action table, and catch possible errors
-	book, err = actionTable[*currentState][*incomingState](book, incomingRequest)
 
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-		return
+	currentState := book.State // this is is a pointer
+
+	if _, hasState := incomingBookAsMap["state"]; hasState {
+
+		// Type assertion
+		incomingState := incomingBookAsMap["state"].(string)
+		incomingISBN := incomingBookAsMap["isbn"].(string)
+
+		var incomingRequest Book = Book{&incomingISBN, &incomingState, nil, nil, nil, nil}
+
+		var incomingCheckedOutCustomerIDptr *string
+		if _, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
+			incomingCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"].(string)
+			incomingCheckedOutCustomerIDptr = &incomingCheckedOutCustomerID
+		}
+		incomingRequest.CheckedOutCustomerID = incomingCheckedOutCustomerIDptr
+
+		var incomingOnHoldCustomerIDptr *string
+		if _, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
+			incomingOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"].(string)
+			incomingRequest.OnHoldCustomerID = &incomingOnHoldCustomerID
+		}
+		incomingRequest.OnHoldCustomerID = incomingOnHoldCustomerIDptr
+
+		book, err = actionTable[*currentState][incomingState](book, &incomingRequest)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+			return
+		}
 	}
 
 	c.IndentedJSON(http.StatusOK, book)
