@@ -70,7 +70,13 @@ func GetIndividualBook(c *gin.Context) {
 
 // POST
 func CreateBook(c *gin.Context) {
-	var newBook Book
+	var newBook Book // value type... this is allocating memory for the book - not a terrible thing
+	// but typically when working with structs, you want to declare the struct variables to be pointer types
+	// the reason you make it a pointer type is because there are 2 different ways values get passed to functions:
+		// 1) pass by value, 
+		// 2) pass by reference
+	// in general, you never want to pass a struct by value, because you don't want the overhead of copying the struct
+	// the other thing that can happen is the thing re-assigning hte pointers when making copies...
 
 	// Unmarshal
 	if err := c.BindJSON(&newBook); err != nil {
