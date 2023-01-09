@@ -22,11 +22,11 @@ type Book struct{
 }
 
 // Test data
-var instanceISBN string = "00"
-var instanceState string = "available"
-var instanceTimeCreated time.Time = time.Now()
-var instanceTimeUpdated time.Time = time.Now()
-var bookInstance00 Book = Book{&instanceISBN, &instanceState, nil, nil, &instanceTimeCreated, &instanceTimeUpdated}
+func ToPtr[T string|time.Time](v T) *T {
+    return &v
+}
+
+var bookInstance00 Book = Book{ToPtr("00"), ToPtr("available"), nil, nil, ToPtr(time.Now()), ToPtr(time.Now())}
 
 var mapOfBooks = map[string]*Book{
 	"00" : &bookInstance00,
