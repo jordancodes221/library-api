@@ -162,35 +162,27 @@ var NoMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
-	fmt.Println("CHECKING OUT...")
 	if (*currentBook.State == "available") {
-		fmt.Println("CHECKING OUT... CURRENT STATE IS AVAILABLE")
 		*currentBook.State = "checked-out" // or should we use incomingBook.State? 
-		fmt.Println("FIRST LINE COMPLETE")
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-		fmt.Println("SECOND LINE COMPLETE")
-		newTimeUpdated := time.Now()
-		*currentBook.TimeUpdated = newTimeUpdated
-		fmt.Println("THIRD LINE COMPLETE")
-	}
-
-	if (*currentBook.State == "on-hold") {
-		if (currentBook.OnHoldCustomerID == incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
+		currentBook.TimeUpdated = ToPtr(time.Now())
+	} else if (*currentBook.State == "on-hold") {
+		if (*currentBook.OnHoldCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			*currentBook.State = "checked-out"
 			currentBook.OnHoldCustomerID = nil
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-			*currentBook.TimeUpdated = time.Now()
+			currentBook.TimeUpdated = ToPtr(time.Now())
 		} else {
 			return nil, NoMatchError
 		}
-	}
-
-	if (*currentBook.State == "checked-out") {
-		if (currentBook.CheckedOutCustomerID == incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
+	} else if (*currentBook.State == "checked-out") {
+		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
 			// pass
 		} else {
 			return nil, NoMatchError
 		}
+	} else {
+		// pass
 	}
 
 	return currentBook, nil
@@ -209,17 +201,18 @@ func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (*currentBook.State == "available") {
 		*currentBook.State = "on-hold"
 		currentBook.OnHoldCustomerID = incomingBook.OnHoldCustomerID
-		*currentBook.TimeUpdated = time.Now()
-	}
-
-	if (*currentBook.State == "on-hold") {
-		if (currentBook.OnHoldCustomerID == incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
+		currentBook.TimeUpdated = ToPtr(time.Now())
+	} else if (*currentBook.State == "on-hold") {
+		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
 		} else {
 			return nil, NoMatchError
 		}
+	} else {
+		// pass 
 	}
 
+	fmt.Println("RETURNING PLACEHOLD")
 	return currentBook, nil
 }
 
@@ -366,4 +359,4 @@ func main() {
 	// DELETE
 		// curl localhost:8080/books/0005 --request "DELETE"
 	// PATCH
-		// curl -X PATCH localhost:8080/books/0001 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
+		// curl -X PATCH localhost:8080/books/00 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
