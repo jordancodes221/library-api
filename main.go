@@ -212,7 +212,6 @@ func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 		// pass 
 	}
 
-	fmt.Println("RETURNING PLACEHOLD")
 	return currentBook, nil
 }
 
