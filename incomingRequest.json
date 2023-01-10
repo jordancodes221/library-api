@@ -1,9 +1,6 @@
 {
   "isbn": "00",
-  "state": "on-hold",
+  "state": "available",
 
-  "onholdcustomerid": "01",
-
-  "timecreated": "0001-01-01 00:00:00 +0000 UTC",
-  "timeupdated": "0001-01-01 00:00:00 +0000 UTC"
+  "onholdcustomerid": "01"
 }

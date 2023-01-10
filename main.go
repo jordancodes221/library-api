@@ -5,8 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"time"
-	"fmt"
+	// "fmt"
 	"encoding/json"
+	"reflect"
 	// "strconv"
 )
 
@@ -28,7 +29,7 @@ func ToPtr[T string|time.Time](v T) *T {
 }
 
 // First test of instantiating test data with new schema and ToPtr function
-var bookInstance00 Book = Book{ToPtr("00"), ToPtr("available"), nil, nil, ToPtr(time.Now()), ToPtr(time.Now())}
+var bookInstance00 Book = Book{ToPtr("00"), ToPtr("on-hold"), ToPtr("01"), nil, ToPtr(time.Now()), ToPtr(time.Now())}
 
 // Actual test data to be used in testing
 var bookInstance0 Book = Book{ToPtr("0000"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Available
@@ -216,13 +217,13 @@ func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 }
 
 // ReleaseHold
-	// on-hold --> available (when ID's match)
+	// on-hold --> available
 func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (*currentBook.State == "on-hold") {
-		if (currentBook.OnHoldCustomerID == incomingBook.OnHoldCustomerID) {
+		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) {
 			*currentBook.State = "available"
 			currentBook.OnHoldCustomerID = nil
-			*currentBook.TimeUpdated = time.Now()
+			currentBook.TimeUpdated = ToPtr(time.Now())
 		} else {
 			return nil, NoMatchError
 		}
@@ -232,13 +233,13 @@ func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 }
 
 // Return
-	// checked-out --> available (when ID's match)
+	// checked-out --> available
 func Return(currentBook *Book, incomingBook *Book) (*Book, error) {
 	if (*currentBook.State == "checked-out") {
-		if (currentBook.CheckedOutCustomerID == incomingBook.CheckedOutCustomerID) {
+		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) {
 			*currentBook.State = "available"
-			currentBook.CheckedOutCustomerID = nil // need this, or leave it as who most recently had it on hold?
-			*currentBook.TimeUpdated = time.Now()
+			currentBook.CheckedOutCustomerID = nil
+			currentBook.TimeUpdated = ToPtr(time.Now())
 		} else {
 			return nil, NoMatchError
 		}
@@ -273,7 +274,6 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 
 // PATCH
 func UpdateBook(c *gin.Context) {
-	fmt.Println("\nUPDATE BOOK CALLED")
 	isbn := c.Param("isbn")
 
 	// Ensure book to be updated exists
@@ -283,8 +283,6 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("BEGINNING BOOK AS MAP DECODING")
-
 	incomingBookAsMap := map[string]interface{}{}
 	dec := json.NewDecoder(c.Request.Body)
 	if err := dec.Decode(&incomingBookAsMap); err != nil {
@@ -292,38 +290,35 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("ENDING BOOK AS MAP DECODING")
-
-	fmt.Println("\nPRINTING BOOK AS MAP...")
-	fmt.Println("")
-	fmt.Println(incomingBookAsMap)
-	fmt.Println("")
-	fmt.Println("\nDONE PRINTING BOOK AS MAP.")
-
+	// Delete key-value pairs in map when the value is zero
+	for k, v := range incomingBookAsMap {
+        if reflect.ValueOf(v).IsZero() {
+            delete(incomingBookAsMap, k)
+        }
+    }
 
 	currentState := book.State // this is is a pointer
 
-	if _, hasState := incomingBookAsMap["state"]; hasState {
+	// The problem is that the map still contains keys for the values missing in the JSON file, but just sets them to zero
+	// The code below assumes that the map contains no keys for zero values...
+	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
 
-		// Type assertion
-		incomingState := incomingBookAsMap["state"].(string)
+		// Type assertion - needed because bookAsMap values are of type interface{}
+		incomingState := incomingState.(string)
 		incomingISBN := incomingBookAsMap["isbn"].(string)
 
-		var incomingRequest Book = Book{&incomingISBN, &incomingState, nil, nil, nil, nil}
+		var incomingRequest Book = Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil}
 
-		var incomingCheckedOutCustomerIDptr *string
-		if _, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
-			incomingCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"].(string)
-			incomingCheckedOutCustomerIDptr = &incomingCheckedOutCustomerID
+		// var incomingCheckedOutCustomerIDptr *string
+		if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
+			incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string)
+			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
 		}
-		incomingRequest.CheckedOutCustomerID = incomingCheckedOutCustomerIDptr
 
-		var incomingOnHoldCustomerIDptr *string
-		if _, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
-			incomingOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"].(string)
-			incomingRequest.OnHoldCustomerID = &incomingOnHoldCustomerID
+		if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
+			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string)
+			incomingRequest.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
 		}
-		incomingRequest.OnHoldCustomerID = incomingOnHoldCustomerIDptr
 
 		book, err = actionTable[*currentState][incomingState](book, &incomingRequest)
 
@@ -331,6 +326,9 @@ func UpdateBook(c *gin.Context) {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 			return
 		}
+	} else {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "MISSING STATE IN THE INCOMING REQUEST"})
+		return
 	}
 
 	c.IndentedJSON(http.StatusOK, book)
