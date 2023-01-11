@@ -304,19 +304,19 @@ func UpdateBook(c *gin.Context) {
 	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
 
 		// Type assertion - needed because bookAsMap values are of type interface{}
-		incomingState := incomingState.(string)
-		incomingISBN := incomingBookAsMap["isbn"].(string)
+		incomingState := incomingState.(string) // Type assertion
+		incomingISBN := incomingBookAsMap["isbn"].(string) // Type assertion
 
 		var incomingRequest Book = Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil}
 
 		// var incomingCheckedOutCustomerIDptr *string
 		if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
-			incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string)
+			incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
 			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
 		}
 
 		if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
-			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string)
+			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
 			incomingRequest.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
 		}
 
