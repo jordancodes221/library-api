@@ -124,17 +124,12 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
-	// These are the fields of the incoming JSON... 
-		/// we should has input checking of the format: 
-			// if _, ok := incomingBookAsMap["isbn"]; ok {
-				// do something
-			// } else {
-				// error - no isbn provided!
-			// }
+	// Update newBook with incoming ISBN and incoming State
+	// ASSUME FOR NOW THAT ISBN AND STATE ARE ALWAYS PROVIDED
 	incomingISBN := incomingBookAsMap["isbn"].(string)
 	incomingState := incomingBookAsMap["state"].(string)
-	incomingOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"].(string)
-	incomingCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"].(string)
+	newBook.ISBN = ToPtr(incomingISBN)
+	newBook.State = ToPtr(incomingState)
 
 	// Make sure ISBN is not already in-use
 	if _, ok := mapOfBooks[incomingISBN]; ok {
@@ -142,11 +137,18 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
-	// Update the fields of newBook
-	newBook.ISBN = ToPtr(incomingISBN)
-	newBook.State = ToPtr(incomingState)
-	newBook.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
-	newBook.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
+	// Update newBook with incoming OnHoldCustomerID and incoming CheckedOutCustomerID, only if either if provided
+	if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
+		incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
+		newBook.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
+	}
+
+	if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
+		incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
+		newBook.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
+	}
+
+	// Update newBook times
 	newBook.TimeCreated = ToPtr(time.Now())
 	newBook.TimeUpdated = ToPtr(time.Time{})
 
@@ -155,7 +157,6 @@ func CreateBook(c *gin.Context) {
 
 	fmt.Println("ABOUT TO RETURN...")
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
-
 }
 
 // DELETE
@@ -325,15 +326,14 @@ func UpdateBook(c *gin.Context) {
 
 		var incomingRequest Book = Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil} // we should change this into a pointer also?
 
-		// var incomingCheckedOutCustomerIDptr *string
-		if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
-			incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
-			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
-		}
-
 		if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
 			incomingRequest.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
+		}
+
+		if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
+			incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
+			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
 		}
 
 		book, err = actionTable[*currentState][incomingState](book, &incomingRequest)
