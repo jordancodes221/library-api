@@ -5,9 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"time"
-	// "fmt"
+	"fmt"
 	"encoding/json"
-	"reflect"
+	// "reflect"
 	// "strconv"
 )
 
@@ -114,32 +114,77 @@ func GetIndividualBook(c *gin.Context) {
 
 // POST
 func CreateBook(c *gin.Context) {
-	var newBook Book // value type... this is allocating memory for the book - not a terrible thing
-	// but typically when working with structs, you want to declare the struct variables to be pointer types
-	// the reason you make it a pointer type is because there are 2 different ways values get passed to functions:
-		// 1) pass by value, 
-		// 2) pass by reference
-	// in general, you never want to pass a struct by value, because you don't want the overhead of copying the struct
-	// the other thing that can happen is the thing re-assigning hte pointers when making copies...
+
+	fmt.Println("\nCALLED CREATEBOOK...")
+
+	var newBook Book // make this a pointer... var newBook *Book
 
 	// Unmarshal
-	if err := c.BindJSON(&newBook); err != nil {
+	fmt.Println("\nBEGIN UNMARSHALLING...")
+	incomingBookAsMap := map[string]interface{}{}
+	dec := json.NewDecoder(c.Request.Body)
+	if err := dec.Decode(&incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
+	fmt.Println("COMPLETED UNMARSHALLIN!")
+	fmt.Print("\nBOOK AS MAP: ")
+	fmt.Println(incomingBookAsMap)
+
+
+	incomingISBN := incomingBookAsMap["isbn"].(string)
+	incomingState := incomingBookAsMap["state"].(string)
+	incomingOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"].(string)
+	incomingCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"].(string)
+	fmt.Print("\nINCOMING ISBN: ")
+	fmt.Println(incomingISBN)
+
 
 	// Make sure ISBN is not already in-use
-	if _, ok := mapOfBooks[*newBook.ISBN]; ok {
-		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
+	fmt.Println("CHECKING IF ISBN IN USE...")
+	if _, ok := mapOfBooks[incomingISBN]; ok {
+		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."}) // this doesn't work yet, since we have not yet added it to mapOfBooks
 		return
 	}
+	fmt.Println("ISBN IS NOT IN USE. WE CAN PROCEED!")
 
-	*newBook.TimeCreated = time.Now()
-	*newBook.TimeUpdated = time.Now()
+	// Update the fields of newBook
+	fmt.Print("BEFORE ANY UPDATES, newBook is: ")
+	fmt.Println(newBook)
 
+	newBook.ISBN = ToPtr(incomingISBN)
+	newBook.State = ToPtr(incomingState)
+	newBook.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
+	newBook.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
+	newBook.TimeCreated = ToPtr(time.Now())
+	newBook.TimeUpdated = ToPtr(time.Time{})
+
+	fmt.Print("AFTER UPDATES, newBook is: ")
+	fmt.Println(newBook) // should see memory addresses, not values
+	fmt.Print("\nnewBook ISBN: ")
+	fmt.Println(*newBook.ISBN)
+	fmt.Print("newBook State: ")
+	fmt.Println(*newBook.State)
+	fmt.Print("newBook On-Hold Customer ID: ")
+	fmt.Println(*newBook.OnHoldCustomerID)
+	fmt.Print("newBook Checked Out Customer ID: ")
+	fmt.Println(*newBook.CheckedOutCustomerID)
+	fmt.Print("newBook Time Created: ")
+	fmt.Println(*newBook.TimeCreated)
+	fmt.Print("newBook Time Updated: ")
+	fmt.Println(*newBook.TimeUpdated)
+
+
+	fmt.Println("ABOUT TO ADD NEW BOOK TO mapOfBooks...")
 	mapOfBooks[*newBook.ISBN] = &newBook
+	fmt.Println("SUCCESSFULLY ADDED TO mapOfBooks!")
+
+	fmt.Println("\nRETRIEVING newBook from mapOfBooks...")
+	fmt.Println(mapOfBooks[*newBook.ISBN])
+	fmt.Println("SUCCESSFULLY RETRIEVED newBook from mapOfBooks!")
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
+
 }
 
 // DELETE
@@ -291,11 +336,11 @@ func UpdateBook(c *gin.Context) {
 	}
 
 	// Delete key-value pairs in map when the value is zero
-	for k, v := range incomingBookAsMap {
-        if reflect.ValueOf(v).IsZero() {
-            delete(incomingBookAsMap, k)
-        }
-    }
+	// for k, v := range incomingBookAsMap {
+    //     if reflect.ValueOf(v).IsZero() {
+    //         delete(incomingBookAsMap, k)
+    //     }
+    // }
 
 	currentState := book.State // this is is a pointer
 
@@ -307,7 +352,7 @@ func UpdateBook(c *gin.Context) {
 		incomingState := incomingState.(string) // Type assertion
 		incomingISBN := incomingBookAsMap["isbn"].(string) // Type assertion
 
-		var incomingRequest Book = Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil}
+		var incomingRequest Book = Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil} // we should change this into a pointer also?
 
 		// var incomingCheckedOutCustomerIDptr *string
 		if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
