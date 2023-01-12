@@ -91,12 +91,12 @@ func GetAllBooks(c *gin.Context) {
 
 // Helper function for GET (individual book)
 func bookByISBN(isbn string) (*Book, error) {
-	bookPtr, ok := mapOfBooks[isbn]
+	bookPtr, ok := mapOfBooks[isbn] // in the future, this line would be a call to a database
 
 	if ok {
 		return bookPtr, nil
 	} else {
-		return nil, errors.New("Book not found.")
+		return nil, nil
 	}
 }
 
