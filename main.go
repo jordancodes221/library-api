@@ -114,44 +114,35 @@ func GetIndividualBook(c *gin.Context) {
 
 // POST
 func CreateBook(c *gin.Context) {
-
-	fmt.Println("\nCALLED CREATEBOOK...")
-
 	var newBook Book // make this a pointer... var newBook *Book
 
 	// Unmarshal
-	fmt.Println("\nBEGIN UNMARSHALLING...")
 	incomingBookAsMap := map[string]interface{}{}
 	dec := json.NewDecoder(c.Request.Body)
 	if err := dec.Decode(&incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
-	fmt.Println("COMPLETED UNMARSHALLIN!")
-	fmt.Print("\nBOOK AS MAP: ")
-	fmt.Println(incomingBookAsMap)
 
-
+	// These are the fields of the incoming JSON... 
+		/// we should has input checking of the format: 
+			// if _, ok := incomingBookAsMap["isbn"]; ok {
+				// do something
+			// } else {
+				// error - no isbn provided!
+			// }
 	incomingISBN := incomingBookAsMap["isbn"].(string)
 	incomingState := incomingBookAsMap["state"].(string)
 	incomingOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"].(string)
 	incomingCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"].(string)
-	fmt.Print("\nINCOMING ISBN: ")
-	fmt.Println(incomingISBN)
-
 
 	// Make sure ISBN is not already in-use
-	fmt.Println("CHECKING IF ISBN IN USE...")
 	if _, ok := mapOfBooks[incomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."}) // this doesn't work yet, since we have not yet added it to mapOfBooks
 		return
 	}
-	fmt.Println("ISBN IS NOT IN USE. WE CAN PROCEED!")
 
 	// Update the fields of newBook
-	fmt.Print("BEFORE ANY UPDATES, newBook is: ")
-	fmt.Println(newBook)
-
 	newBook.ISBN = ToPtr(incomingISBN)
 	newBook.State = ToPtr(incomingState)
 	newBook.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
@@ -159,30 +150,10 @@ func CreateBook(c *gin.Context) {
 	newBook.TimeCreated = ToPtr(time.Now())
 	newBook.TimeUpdated = ToPtr(time.Time{})
 
-	fmt.Print("AFTER UPDATES, newBook is: ")
-	fmt.Println(newBook) // should see memory addresses, not values
-	fmt.Print("\nnewBook ISBN: ")
-	fmt.Println(*newBook.ISBN)
-	fmt.Print("newBook State: ")
-	fmt.Println(*newBook.State)
-	fmt.Print("newBook On-Hold Customer ID: ")
-	fmt.Println(*newBook.OnHoldCustomerID)
-	fmt.Print("newBook Checked Out Customer ID: ")
-	fmt.Println(*newBook.CheckedOutCustomerID)
-	fmt.Print("newBook Time Created: ")
-	fmt.Println(*newBook.TimeCreated)
-	fmt.Print("newBook Time Updated: ")
-	fmt.Println(*newBook.TimeUpdated)
-
-
-	fmt.Println("ABOUT TO ADD NEW BOOK TO mapOfBooks...")
+	// Add newBook to mapOfBooks
 	mapOfBooks[*newBook.ISBN] = &newBook
-	fmt.Println("SUCCESSFULLY ADDED TO mapOfBooks!")
 
-	fmt.Println("\nRETRIEVING newBook from mapOfBooks...")
-	fmt.Println(mapOfBooks[*newBook.ISBN])
-	fmt.Println("SUCCESSFULLY RETRIEVED newBook from mapOfBooks!")
-
+	fmt.Println("ABOUT TO RETURN...")
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 
 }
