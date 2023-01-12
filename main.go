@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"time"
-	"fmt"
+	// "fmt"
 	"encoding/json"
 	// "reflect"
 	// "strconv"
@@ -315,17 +315,15 @@ func UpdateBook(c *gin.Context) {
     //     }
     // }
 
-	currentState := book.State // this is is a pointer
+	currentState := book.State // this is a pointer
 
-	// The problem is that the map still contains keys for the values missing in the JSON file, but just sets them to zero
-	// The code below assumes that the map contains no keys for zero values...
 	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
 
 		// Type assertion - needed because bookAsMap values are of type interface{}
 		incomingState := incomingState.(string) // Type assertion
 		incomingISBN := incomingBookAsMap["isbn"].(string) // Type assertion
 
-		var incomingRequest Book = Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil} // we should change this into a pointer also?
+		var incomingRequest *Book = &Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil}
 
 		if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
@@ -337,7 +335,7 @@ func UpdateBook(c *gin.Context) {
 			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
 		}
 
-		book, err = actionTable[*currentState][incomingState](book, &incomingRequest)
+		book, err = actionTable[*currentState][incomingState](book, incomingRequest)
 
 		if err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
