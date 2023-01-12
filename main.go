@@ -112,7 +112,7 @@ func GetIndividualBook(c *gin.Context) {
 	}
 
 	if book == nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"REQUEST SUCCESSFUL": "BOOK NOT FOUND"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
 		return
 	}
 
@@ -170,9 +170,15 @@ func CreateBook(c *gin.Context) {
 func DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	_, err := bookByISBN(isbn)
+	book, err := bookByISBN(isbn)
+
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()}) // 500 status code
+		return
+	}
+
+	if book == nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
 		return
 	}
 
