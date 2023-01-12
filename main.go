@@ -91,7 +91,8 @@ func GetAllBooks(c *gin.Context) {
 
 // Helper function for GET (individual book)
 func bookByISBN(isbn string) (*Book, error) {
-	bookPtr, ok := mapOfBooks[isbn] // in the future, this line would be a call to a database
+	bookPtr, ok := mapOfBooks[isbn] // in the future, this could be a call to a database
+	// if there is an error connecting to the database, then we will return: nil, InternalServerError
 
 	if ok {
 		return bookPtr, nil
@@ -106,7 +107,12 @@ func GetIndividualBook(c *gin.Context) {
 	book, err := bookByISBN(isbn)
 
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()}) // 500 status code if unsuccessful
+		return
+	}
+
+	if book == nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"REQUEST SUCCESSFUL": "BOOK NOT FOUND"})
 		return
 	}
 
