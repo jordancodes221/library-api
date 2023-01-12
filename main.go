@@ -306,12 +306,18 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 func UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	// Ensure book to be updated exists
+	
 	book, err := bookByISBN(isbn)
+
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": err.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
 		return
 	}
+
+	if book == nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
+		return
+	}	
 
 	incomingBookAsMap := map[string]interface{}{}
 	dec := json.NewDecoder(c.Request.Body)
