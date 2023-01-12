@@ -55,6 +55,7 @@ var bookInstance15 Book = Book{ToPtr("0015"), ToPtr("available"), 	nil, 	nil, 	T
 // Map of test data to be used in testing
 var mapOfBooks = map[string]*Book{
 	"00" : &bookInstance00,
+
 	"0000" : &bookInstance0,
 	"0001" : &bookInstance1,
 	"0002" : &bookInstance2,
@@ -114,7 +115,7 @@ func GetIndividualBook(c *gin.Context) {
 
 // POST
 func CreateBook(c *gin.Context) {
-	var newBook Book // make this a pointer... var newBook *Book
+	var newBook *Book = &Book{nil, nil, nil, nil, nil, nil}
 
 	// Unmarshal
 	incomingBookAsMap := map[string]interface{}{}
@@ -127,13 +128,14 @@ func CreateBook(c *gin.Context) {
 	// Update newBook with incoming ISBN and incoming State
 	// ASSUME FOR NOW THAT ISBN AND STATE ARE ALWAYS PROVIDED
 	incomingISBN := incomingBookAsMap["isbn"].(string)
-	incomingState := incomingBookAsMap["state"].(string)
 	newBook.ISBN = ToPtr(incomingISBN)
+
+	incomingState := incomingBookAsMap["state"].(string)
 	newBook.State = ToPtr(incomingState)
 
 	// Make sure ISBN is not already in-use
 	if _, ok := mapOfBooks[incomingISBN]; ok {
-		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."}) // this doesn't work yet, since we have not yet added it to mapOfBooks
+		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
 
@@ -153,9 +155,8 @@ func CreateBook(c *gin.Context) {
 	newBook.TimeUpdated = ToPtr(time.Time{})
 
 	// Add newBook to mapOfBooks
-	mapOfBooks[*newBook.ISBN] = &newBook
+	mapOfBooks[*newBook.ISBN] = newBook
 
-	fmt.Println("ABOUT TO RETURN...")
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }
 
