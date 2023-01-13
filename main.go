@@ -5,8 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"errors"
 	"time"
-	// "fmt"
 	"encoding/json"
+	// "fmt"
 	// "reflect"
 	// "strconv"
 )
@@ -131,21 +131,25 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
-	// Update newBook with incoming ISBN and incoming State
-	// ASSUME FOR NOW THAT ISBN AND STATE ARE ALWAYS PROVIDED
-	incomingISBN := incomingBookAsMap["isbn"].(string)
-	newBook.ISBN = ToPtr(incomingISBN)
-
-	incomingState := incomingBookAsMap["state"].(string)
-	newBook.State = ToPtr(incomingState)
+	// Ensure that incoming JSON includes ISBN
+	if _, hasISBN := incomingBookAsMap["isbn"]; !hasISBN {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing ISBN in the incoming request."})
+		return
+	}
 
 	// Make sure ISBN is not already in-use
+	incomingISBN := incomingBookAsMap["isbn"].(string)
 	if _, ok := mapOfBooks[incomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
 
-	// Update newBook with incoming OnHoldCustomerID and incoming CheckedOutCustomerID, only if either if provided
+	// Update newBook fields (ASSUME FOR NOW ISBN & STATE ALWAYS PROVIDED)
+	newBook.ISBN = ToPtr(incomingISBN)
+
+	incomingState := incomingBookAsMap["state"].(string)
+	newBook.State = ToPtr(incomingState)
+
 	if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 		incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
 		newBook.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
@@ -306,7 +310,6 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 func UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	
 	book, err := bookByISBN(isbn)
 
 	if err != nil {
@@ -360,7 +363,7 @@ func UpdateBook(c *gin.Context) {
 			return
 		}
 	} else {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "MISSING STATE IN THE INCOMING REQUEST"})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing state in the incoming request."})
 		return
 	}
 
