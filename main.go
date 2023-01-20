@@ -119,6 +119,31 @@ func GetIndividualBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, book)
 }
 
+// Syntactic Validation
+func Validate(incomingBookAsMap map[string]interface{}) (error) { // the request will not complete if input is not OK, which why it is possible to return an error	
+	// ISBN
+	if isbn, hasISBN := incomingBookAsMap["isbn"]; hasISBN {
+		_, isbnIsString := isbn.(string)
+		if !isbnIsString {
+			return errors.New("ISBN provided is not of type string.")
+		}
+	}
+
+	// State
+	if state, hasState := incomingBookAsMap["state"]; hasState {
+		state, stateIsString := state.(string)
+		if !stateIsString {
+			return errors.New("State provided is not of type string.")
+		}
+
+		if ((state != "available") && (state != "on-hold") && (state != "checked-out")) {
+			return errors.New("Invalid state provided. State must be equal to one of: \"available\", \"on-hold\", or \"checked-out\".")
+		}
+	}
+
+	return nil
+}
+
 // POST
 func CreateBook(c *gin.Context) {
 	var newBook *Book = &Book{nil, nil, nil, nil, nil, nil}
