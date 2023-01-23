@@ -120,8 +120,8 @@ func GetIndividualBook(c *gin.Context) {
 }
 
 // Syntactic Validation
-func Validate(incomingBookAsMap map[string]interface{}) (error) { // the request will not complete if input is not OK, which why it is possible to return an error	
-	// ISBN
+func Validate(incomingBookAsMap map[string]interface{}) (error) { // the request will not complete if input is not OK, which why it is possible to return an error		
+	// Assuming ISBN is present, is it valid?
 	if isbn, hasISBN := incomingBookAsMap["isbn"]; hasISBN {
 		_, isbnIsString := isbn.(string)
 		if !isbnIsString {
@@ -129,7 +129,7 @@ func Validate(incomingBookAsMap map[string]interface{}) (error) { // the request
 		}
 	}
 
-	// State
+	// Assuming State is present, is it valid?
 	if state, hasState := incomingBookAsMap["state"]; hasState {
 		state, stateIsString := state.(string)
 		if !stateIsString {
@@ -159,6 +159,16 @@ func CreateBook(c *gin.Context) {
 	// Ensure that incoming JSON includes ISBN
 	if _, hasISBN := incomingBookAsMap["isbn"]; !hasISBN {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing ISBN in the incoming request."})
+		return
+	}
+
+	// The reason for calling validate at this point is that it is:
+		// (1) After checking that ISBN is present, and
+		// (2) Before checking if ISBN is in-use (we want to ensure it's valid before checking if it's in-use)
+
+	// Validate ISBN
+	if err := Validate(incomingBookAsMap); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
@@ -354,13 +364,6 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	// Delete key-value pairs in map when the value is zero
-	// for k, v := range incomingBookAsMap {
-    //     if reflect.ValueOf(v).IsZero() {
-    //         delete(incomingBookAsMap, k)
-    //     }
-    // }
-
 	currentState := book.State // this is a pointer
 
 	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
@@ -418,3 +421,69 @@ func main() {
 		// curl localhost:8080/books/0005 --request "DELETE"
 	// PATCH
 		// curl -X PATCH localhost:8080/books/00 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
+
+
+
+
+//////// SEMANTIC CHECKING IN INPUTOK -- MUST BE USED IN HANDLER / HELPER FUNCTIONS
+
+	// // Retrieve the customer ID's if they are present
+	// _, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
+	// _, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
+
+	// // State is available -- THIS IS SEMANTIC CHECKING
+	// if (state == "available") {
+	// 	if ((hasOnHoldCustomerID) && (!hasCheckedOutCustomerID)) {
+	// 		return errors.New("Cannot have an on-hold customer ID when state is available.")
+	// 	}
+
+	// 	if (!(hasOnHoldCustomerID) && (hasCheckedOutCustomerID)) {
+	// 		return errors.New("Cannot have checked-out customer ID when state is available.")
+	// 	}
+		
+	// 	if (hasOnHoldCustomerID || hasCheckedOutCustomerID) {
+	// 		return errors.New("Cannot have on-hold customer ID or checked-out customer ID when state is available.")
+	// 	}
+	// }
+
+	// // State is on-hold -- THIS IS SEMANTIC CHECKING
+	// if (state == "on-hold") {
+	// 	if hasCheckedOutCustomerID {
+	// 		return errors.New("Cannot have checked-out customer ID when state is on-hold.")
+	// 	}
+
+	// 	if hasOnHoldCustomerID {
+	// 		// We know ohid is provided. Ensure it is a string
+	// 		ohid, ohidIsString := incomingBookAsMap["onholdcustomerid"].(string)
+	// 		if !ohidIsString {
+	// 			return errors.New("On-hold customer ID provided is not of type string.")
+	// 		}
+
+	// 		if (ohid == "") {
+	// 			return errors.New("On-hold customer ID is the empty string.")
+	// 		}
+	// 	} else { // !hasOnHoldCustomerID
+	// 		return errors.New("State provided is on-hold, but no on-hold customer ID is provided.")
+	// 	}
+	// }
+
+	// // State is checked-out -- THIS IS SEMANTIC CHECKING
+	// if (state == "checked-out") {
+	// 	if hasOnHoldCustomerID {
+	// 		return errors.New("Cannot have on-hold customer ID when state is checked-out.")
+	// 	}
+
+	// 	if hasCheckedOutCustomerID {
+	// 		// We know ohid is provided. Ensure it is a string
+	// 		coid, coidIsString := incomingBookAsMap["checkedoutcustomerid"].(string)
+	// 		if !coidIsString {
+	// 			return errors.New("Checked-out customer ID provided is not of type string.")
+	// 		}
+
+	// 		if (coid == "") {
+	// 			return errors.New("Checked-out customer ID is the empty string.")
+	// 		}
+	// 	} else { // !hasCheckedOutCustomerID
+	// 		return errors.New("State provided is checked-out, but no checked-out customer ID is provided.")
+	// 	}
+	// }
