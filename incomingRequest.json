@@ -1,6 +1,6 @@
 {
-  "isbn": "00",
-  "state": "available",
+  "isbn": "100",
+  "state": "checked-out",
 
-  "onholdcustomerid": "01"
+  "checkedoutcustomerid": "01"
 }
