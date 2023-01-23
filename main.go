@@ -173,17 +173,27 @@ func CreateBook(c *gin.Context) {
 	}
 
 	// Make sure ISBN is not already in-use
+		// At this point, we know that ISBN (1) is present, and (2) is valid
 	incomingISBN := incomingBookAsMap["isbn"].(string)
 	if _, ok := mapOfBooks[incomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
 
-	// Update newBook fields (ASSUME FOR NOW ISBN & STATE ALWAYS PROVIDED)
+	// Update newBook ISBN field
 	newBook.ISBN = ToPtr(incomingISBN)
 
-	incomingState := incomingBookAsMap["state"].(string)
-	newBook.State = ToPtr(incomingState)
+	// if state is present, update newBook State field 
+	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
+		incomingState := incomingState.(string) // Type Assertion
+		newBook.State = ToPtr(incomingState)
+	} else {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing State in the incoming request."})
+		return
+	}
+
+	// incomingState := incomingBookAsMap["state"].(string) // ASSUME STATE IS PRESENT - we ca
+	// newBook.State = ToPtr(incomingState)
 
 	if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 		incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
