@@ -120,7 +120,7 @@ func GetIndividualBook(c *gin.Context) {
 }
 
 // Syntactic Validation
-func Validate(incomingBookAsMap map[string]interface{}) (error) { // the request will not complete if input is not OK, which why it is possible to return an error		
+func ValidateISBNAndStateSyntax(incomingBookAsMap map[string]interface{}) (error) { // the request will not complete if input is not OK, which why it is possible to return an error		
 	// Assuming ISBN is present, is it valid?
 	if isbn, hasISBN := incomingBookAsMap["isbn"]; hasISBN {
 		_, isbnIsString := isbn.(string)
@@ -144,8 +144,8 @@ func Validate(incomingBookAsMap map[string]interface{}) (error) { // the request
 	return nil
 }
 
-func CorrectIDsProvidedForNewBook(incomingBookAsMap map[string]interface{}) (error) {
-	fmt.Println("CALLING CorrectIDsProvidedForNewBook...")
+func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
+	fmt.Println("CALLING ValidateIDSemanticsForCreateBook...")
 
 	// This function will only be called once state is established to be both present and valid
 	state := incomingBookAsMap["state"]
@@ -237,7 +237,7 @@ func CreateBook(c *gin.Context) {
 		// (2) Before checking if ISBN is in-use (we want to ensure it's valid before checking if it's in-use)
 
 	// Validate ISBN
-	if err := Validate(incomingBookAsMap); err != nil {
+	if err := ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -263,7 +263,7 @@ func CreateBook(c *gin.Context) {
 	}
 
 	// Ensure correct customer ID fields are provided given the state
-	if err := CorrectIDsProvidedForNewBook(incomingBookAsMap); err != nil {
+	if err := ValidateIDSemanticsForCreateBook(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -310,6 +310,20 @@ func DeleteBook(c *gin.Context) {
 	c.Status(http.StatusNoContent) // 204 status code if successful
 }
 
+// Semantic Validation for Checkout and Return
+func ValidateIDSemanticsForCheckedOutUpdate(incomingBookAsMap map[string]interface{}) (error) {
+	
+	
+	
+	return nil
+}
+
+// Semantic Validation for PlaceHold and ReleaseHold
+func ValidateIDSemanticsForOnHoldUpdate(incomingBookAsMap map[string]interface{}) (error) {
+	return nil
+}
+
+// No Match Error
 var NoMatchError error = errors.New("ID's do not match.")
 
 // Checkout
