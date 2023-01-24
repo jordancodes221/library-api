@@ -312,14 +312,41 @@ func DeleteBook(c *gin.Context) {
 
 // Semantic Validation for Checkout and Return
 func ValidateIDSemanticsForCheckedOutUpdate(incomingBookAsMap map[string]interface{}) (error) {
-	
-	
-	
+	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
+	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
+
+	if (!hasCheckedOutCustomerID && !hasOnHoldCustomerID) {
+		return errors.New("Expected checked-out customer ID.")
+	}
+
+	if (hasCheckedOutCustomerID && hasOnHoldCustomerID) {
+		return errors.New("Did not expected on-hold customer ID.")
+	}
+
+	if (!hasCheckedOutCustomerID && hasOnHoldCustomerID) {
+		return errors.New("Expected checked-out customer ID, and did not expected on-hold customer ID.")
+	}
+
 	return nil
 }
 
 // Semantic Validation for PlaceHold and ReleaseHold
 func ValidateIDSemanticsForOnHoldUpdate(incomingBookAsMap map[string]interface{}) (error) {
+	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
+	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
+
+	if (!hasOnHoldCustomerID && !hasCheckedOutCustomerID) {
+		return errors.New("Expected on-hold customer ID.")
+	}
+
+	if (hasOnHoldCustomerID && hasCheckedOutCustomerID) {
+		return errors.New("Did not expected checked-out customer ID.")
+	}
+
+	if (!hasOnHoldCustomerID && hasCheckedOutCustomerID) {
+		return errors.New("Expected on-hold customer ID, and did not expected checked-out customer ID.")
+	}
+
 	return nil
 }
 
