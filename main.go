@@ -315,6 +315,7 @@ func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *Book) (error) {
 	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
 	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
 	
+	fmt.Println("CALLING ValidateIDSemanticsForCheckedOutUpdate...")
 	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
 	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
@@ -340,6 +341,7 @@ func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *Book) (error) {
 	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
 	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
+	fmt.Println("CALLING ValidateIDSemanticsForOnHoldUpdate...")
 	if (onHoldCustomerID == nil && checkedOutCustomerID == nil) {
 		return errors.New("Expected on-hold customer ID.")
 	}
@@ -363,6 +365,10 @@ var NoMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
+	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "available") {
 		*currentBook.State = "checked-out" // or should we use incomingBook.State? 
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
@@ -399,6 +405,10 @@ func Conflict(currentBook *Book, incomingBook *Book) (*Book, error) {
 	// available --> on-hold
 	// on-hold --> on-hold
 func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
+	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "available") {
 		*currentBook.State = "on-hold"
 		currentBook.OnHoldCustomerID = incomingBook.OnHoldCustomerID
@@ -419,6 +429,10 @@ func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 // ReleaseHold
 	// on-hold --> available
 func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
+	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) {
 			*currentBook.State = "available"
@@ -435,6 +449,12 @@ func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 // Return
 	// checked-out --> available
 func Return(currentBook *Book, incomingBook *Book) (*Book, error) {
+	fmt.Println("CALLING RETURNBOOK...")
+
+	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "checked-out") {
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) {
 			*currentBook.State = "available"
