@@ -52,6 +52,11 @@ var bookInstance14 Book = Book{ToPtr("0014"), ToPtr("on-hold"), 	ToPtr("01"), 	n
 
 var bookInstance15 Book = Book{ToPtr("0015"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> This is the book to be deleted in testing
 
+// The following are for UpdateBook ID semantics validation
+var bookInstance16 Book = Book{ToPtr("0016"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} 
+var bookInstance17 Book = Book{ToPtr("0017"), ToPtr("checked-out"), nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})}
+var bookInstance18 Book = Book{ToPtr("0018"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})}
+
 // Map of test data to be used in testing
 var mapOfBooks = map[string]*Book{
 	"00" : &bookInstance00,
@@ -75,6 +80,10 @@ var mapOfBooks = map[string]*Book{
 	"0014" : &bookInstance14,
 
 	"0015" : &bookInstance15,
+
+	"0016" : &bookInstance16,
+	"0017" : &bookInstance17,
+	"0018" : &bookInstance18,
 }
 
 // GET (all books)
@@ -324,11 +333,11 @@ func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *Book) (error) {
 	}
 
 	if (checkedOutCustomerID != nil && onHoldCustomerID != nil) {
-		return errors.New("Did not expected on-hold customer ID.")
+		return errors.New("Did not expect on-hold customer ID.")
 	}
 
 	if (checkedOutCustomerID == nil && onHoldCustomerID != nil) {
-		return errors.New("Expected checked-out customer ID, and did not expected on-hold customer ID.")
+		return errors.New("Expected checked-out customer ID, and did not expect on-hold customer ID.")
 	}
 
 	return nil
@@ -347,11 +356,11 @@ func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *Book) (error) {
 	}
 
 	if (onHoldCustomerID != nil && checkedOutCustomerID != nil) {
-		return errors.New("Did not expected checked-out customer ID.")
+		return errors.New("Did not expect checked-out customer ID.")
 	}
 
 	if (onHoldCustomerID == nil && checkedOutCustomerID != nil) {
-		return errors.New("Expected on-hold customer ID, and did not expected checked-out customer ID.")
+		return errors.New("Expected on-hold customer ID, and did not expect checked-out customer ID.")
 	}
 
 	return nil
