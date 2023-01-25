@@ -311,19 +311,22 @@ func DeleteBook(c *gin.Context) {
 }
 
 // Semantic Validation for Checkout and Return
-func ValidateIDSemanticsForCheckedOutUpdate(incomingBookAsMap map[string]interface{}) (error) {
-	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
-	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
+func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *Book) (error) {
+	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
+	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
+	
+	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
+	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
-	if (!hasCheckedOutCustomerID && !hasOnHoldCustomerID) {
+	if (checkedOutCustomerID == nil && onHoldCustomerID == nil) {
 		return errors.New("Expected checked-out customer ID.")
 	}
 
-	if (hasCheckedOutCustomerID && hasOnHoldCustomerID) {
+	if (checkedOutCustomerID != nil && onHoldCustomerID != nil) {
 		return errors.New("Did not expected on-hold customer ID.")
 	}
 
-	if (!hasCheckedOutCustomerID && hasOnHoldCustomerID) {
+	if (checkedOutCustomerID == nil && onHoldCustomerID != nil) {
 		return errors.New("Expected checked-out customer ID, and did not expected on-hold customer ID.")
 	}
 
@@ -331,19 +334,21 @@ func ValidateIDSemanticsForCheckedOutUpdate(incomingBookAsMap map[string]interfa
 }
 
 // Semantic Validation for PlaceHold and ReleaseHold
-func ValidateIDSemanticsForOnHoldUpdate(incomingBookAsMap map[string]interface{}) (error) {
-	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
-	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
+func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *Book) (error) {
+	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
+	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
+	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
+	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
-	if (!hasOnHoldCustomerID && !hasCheckedOutCustomerID) {
+	if (onHoldCustomerID == nil && checkedOutCustomerID == nil) {
 		return errors.New("Expected on-hold customer ID.")
 	}
 
-	if (hasOnHoldCustomerID && hasCheckedOutCustomerID) {
+	if (onHoldCustomerID != nil && checkedOutCustomerID != nil) {
 		return errors.New("Did not expected checked-out customer ID.")
 	}
 
-	if (!hasOnHoldCustomerID && hasCheckedOutCustomerID) {
+	if (onHoldCustomerID == nil && checkedOutCustomerID != nil) {
 		return errors.New("Expected on-hold customer ID, and did not expected checked-out customer ID.")
 	}
 
