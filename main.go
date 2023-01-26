@@ -134,7 +134,7 @@ func ValidateISBNAndStateSyntax(incomingBookAsMap map[string]interface{}) (error
 	if isbn, hasISBN := incomingBookAsMap["isbn"]; hasISBN {
 		_, isbnIsString := isbn.(string)
 		if !isbnIsString {
-			return errors.New("ISBN provided is not of type string.")
+			return errors.New("ISBN provided is not of type string.") // Tested in "Incorrect ISBN Type" test of CreateBook in Postman
 		}
 	}
 
@@ -142,11 +142,12 @@ func ValidateISBNAndStateSyntax(incomingBookAsMap map[string]interface{}) (error
 	if state, hasState := incomingBookAsMap["state"]; hasState {
 		state, stateIsString := state.(string)
 		if !stateIsString {
-			return errors.New("State provided is not of type string.")
+			return errors.New("State provided is not of type string.") // Tested in "Incorrect State Type" test of UpdateBook in Postman
 		}
 
 		if ((state != "available") && (state != "on-hold") && (state != "checked-out")) {
 			return errors.New("Invalid state provided. State must be equal to one of: \"available\", \"on-hold\", or \"checked-out\".")
+			// Tested in "Invalid State" test of UpdateBook in Postman
 		}
 	}
 
