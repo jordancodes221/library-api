@@ -256,12 +256,6 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
-	// Validate Time Semantics
-	if err := ValidateTimeSemantics(incomingBookAsMap); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-		return
-	}
-
 	// Ensure that incoming JSON includes ISBN
 	if _, hasISBN := incomingBookAsMap["isbn"]; !hasISBN {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing ISBN in the incoming request."})
@@ -272,7 +266,7 @@ func CreateBook(c *gin.Context) {
 		// (1) After checking that ISBN is present, and
 		// (2) Before checking if ISBN is in-use (we want to ensure it's valid before checking if it's in-use)
 
-	// Validate ISBN
+	// Validate ISBN and State Syntax
 	if err := ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
@@ -283,6 +277,12 @@ func CreateBook(c *gin.Context) {
 	incomingISBN := incomingBookAsMap["isbn"].(string)
 	if _, ok := mapOfBooks[incomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
+		return
+	}
+
+	// Validate Time Semantics
+	if err := ValidateTimeSemantics(incomingBookAsMap); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
@@ -546,6 +546,12 @@ func UpdateBook(c *gin.Context) {
 	incomingBookAsMap := map[string]interface{}{}
 	dec := json.NewDecoder(c.Request.Body)
 	if err := dec.Decode(&incomingBookAsMap); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
+
+	// Validate ISBN and State Syntax
+	if err := ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
