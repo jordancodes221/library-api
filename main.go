@@ -223,6 +223,27 @@ func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) 
 	return nil
 }
 
+func ValidateTimeSemantics(incomingBookAsMap map[string]interface{}) (error) {
+	fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
+
+	_, hasTimeCreated := incomingBookAsMap["timecreated"]
+	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
+
+	if (hasTimeCreated && !hasTimeUpdated) {
+		return errors.New("Client cannot provide time created.")
+	}
+
+	if (!hasTimeCreated && hasTimeUpdated) {
+		return errors.New("Client cannot provide time updated.")
+	}
+
+	if (hasTimeCreated && hasTimeUpdated) {
+		return errors.New("Client cannot provide time created or time updated.")
+	}
+
+	return nil
+}
+
 // POST
 func CreateBook(c *gin.Context) {
 	var newBook *Book = &Book{nil, nil, nil, nil, nil, nil}
@@ -231,6 +252,12 @@ func CreateBook(c *gin.Context) {
 	incomingBookAsMap := map[string]interface{}{}
 	dec := json.NewDecoder(c.Request.Body)
 	if err := dec.Decode(&incomingBookAsMap); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
+
+	// Validate Time Semantics
+	if err := ValidateTimeSemantics(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -506,7 +533,6 @@ func UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
 	book, err := bookByISBN(isbn)
-
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
 		return
@@ -520,6 +546,12 @@ func UpdateBook(c *gin.Context) {
 	incomingBookAsMap := map[string]interface{}{}
 	dec := json.NewDecoder(c.Request.Body)
 	if err := dec.Decode(&incomingBookAsMap); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
+
+	// Validate Time Semantics
+	if err := ValidateTimeSemantics(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
