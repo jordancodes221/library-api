@@ -1,6 +1,9 @@
 package main
 
 import (
+	"example/library_project/handlers"
+	"example/library_project/validators"
+
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"errors"
