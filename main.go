@@ -1,8 +1,11 @@
 package main
 
 import (
-	"example/library_project/handlers"
+	// "example/library_project/handlers"
 	"example/library_project/validators"
+	"example/library_project/book"
+	
+
 
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -14,17 +17,6 @@ import (
 	// "strconv"
 )
 
-type Book struct{
-	ISBN 			*string 	`json:"isbn"`
-	State 			*string 	`json:"state"`
-
-	OnHoldCustomerID 	*string 	`json:"onholdcustomerid"`
-	CheckedOutCustomerID 	*string 	`json:"checkedoutcustomerid"`
-
-	TimeCreated 		*time.Time 	`json:"timecreated"`
-	TimeUpdated  		*time.Time	`json:"timeupdated"`
-}
-
 //// Instantiating Test Data
 // Generic function converts literals to pointers
 func ToPtr[T string|time.Time](v T) *T {
@@ -32,36 +24,36 @@ func ToPtr[T string|time.Time](v T) *T {
 }
 
 // First test of instantiating test data with new schema and ToPtr function
-var bookInstance00 Book = Book{ToPtr("00"), ToPtr("on-hold"), ToPtr("01"), nil, ToPtr(time.Now()), ToPtr(time.Now())}
+var bookInstance00 book.Book = book.Book{ISBN: ToPtr("00"), State: ToPtr("on-hold"), OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Now())}
 
 // Actual test data to be used in testing
-var bookInstance0 Book = Book{ToPtr("0000"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Available
-var bookInstance1 Book = Book{ToPtr("0001"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Checked-out
-var bookInstance2 Book = Book{ToPtr("0002"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> On-hold
+var bookInstance0 book.Book = book.Book{ISBN: ToPtr("0000"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
+var bookInstance1 book.Book = book.Book{ISBN: ToPtr("0001"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
+var bookInstance2 book.Book = book.Book{ISBN: ToPtr("0002"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold
 
-var bookInstance3 Book = Book{ToPtr("0003"), ToPtr("checked-out"), 	nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Available
-var bookInstance4 Book = Book{ToPtr("0004"), ToPtr("checked-out"), 	nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Available (no match)
-var bookInstance5 Book = Book{ToPtr("0005"), ToPtr("checked-out"), 	nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Checked-out
-var bookInstance6 Book = Book{ToPtr("0006"), ToPtr("checked-out"), 	nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Checked-out (no match)
-var bookInstance7 Book = Book{ToPtr("0007"), ToPtr("checked-out"), 	nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> On-hold 
-var bookInstance8 Book = Book{ToPtr("0008"), ToPtr("checked-out"), 	nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> On-hold (no match)
+var bookInstance3 book.Book = book.Book{ISBN: ToPtr("0003"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
+var bookInstance4 book.Book = book.Book{ISBN: ToPtr("0004"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
+var bookInstance5 book.Book = book.Book{ISBN: ToPtr("0005"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
+var bookInstance6 book.Book = book.Book{ISBN: ToPtr("0006"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
+var bookInstance7 book.Book = book.Book{ISBN: ToPtr("0007"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
+var bookInstance8 book.Book = book.Book{ISBN: ToPtr("0008"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
 
-var bookInstance9 Book =  Book{ToPtr("0009"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Available
-var bookInstance10 Book = Book{ToPtr("0010"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Available (no match)
-var bookInstance11 Book = Book{ToPtr("0011"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Checked-out
-var bookInstance12 Book = Book{ToPtr("0012"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> Checked-out (no match)
-var bookInstance13 Book = Book{ToPtr("0013"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> On-hold 
-var bookInstance14 Book = Book{ToPtr("0014"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> On-hold (no match)
+var bookInstance9 book.Book =  book.Book{ISBN: ToPtr("0009"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
+var bookInstance10 book.Book = book.Book{ISBN: ToPtr("0010"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
+var bookInstance11 book.Book = book.Book{ISBN: ToPtr("0011"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
+var bookInstance12 book.Book = book.Book{ISBN: ToPtr("0012"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
+var bookInstance13 book.Book = book.Book{ISBN: ToPtr("0013"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
+var bookInstance14 book.Book = book.Book{ISBN: ToPtr("0014"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
 
-var bookInstance15 Book = Book{ToPtr("0015"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} // --> This is the book to be deleted in testing
+var bookInstance15 book.Book = book.Book{ISBN: ToPtr("0015"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> This is the book to be deleted in testing
 
 // The following are for UpdateBook ID semantics validation
-var bookInstance16 Book = Book{ToPtr("0016"), ToPtr("available"), 	nil, 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})} 
-var bookInstance17 Book = Book{ToPtr("0017"), ToPtr("checked-out"), nil, 	ToPtr("01"), 	ToPtr(time.Now()), ToPtr(time.Time{})}
-var bookInstance18 Book = Book{ToPtr("0018"), ToPtr("on-hold"), 	ToPtr("01"), 	nil, 	ToPtr(time.Now()), ToPtr(time.Time{})}
+var bookInstance16 book.Book = book.Book{ISBN: ToPtr("0016"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} 
+var bookInstance17 book.Book = book.Book{ISBN: ToPtr("0017"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
+var bookInstance18 book.Book = book.Book{ISBN: ToPtr("0018"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
 
 // Map of test data to be used in testing
-var mapOfBooks = map[string]*Book{
+var mapOfBooks = map[string]*book.Book{
 	"00" : &bookInstance00,
 
 	"0000" : &bookInstance0,
@@ -92,7 +84,7 @@ var mapOfBooks = map[string]*Book{
 // GET (all books)
 func GetAllBooks(c *gin.Context) {
 	// Make a slice containing all the values from mapOfBooks
-	var vals []*Book
+	var vals []*book.Book
 	
 	for _, v := range mapOfBooks {
 		vals = append(vals, v)
@@ -102,7 +94,7 @@ func GetAllBooks(c *gin.Context) {
 }
 
 // Helper function for GET (individual book)
-func bookByISBN(isbn string) (*Book, error) {
+func bookByISBN(isbn string) (*book.Book, error) {
 	bookPtr, ok := mapOfBooks[isbn] // in the future, this could be a call to a database
 	// if there is an error connecting to the database, then we will return: nil, InternalServerError
 
@@ -131,126 +123,15 @@ func GetIndividualBook(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, book)
 }
 
-// Syntactic Validation
-func ValidateISBNAndStateSyntax(incomingBookAsMap map[string]interface{}) (error) { // the request will not complete if input is not OK, which why it is possible to return an error		
-	// Assuming ISBN is present, is it valid?
-	if isbn, hasISBN := incomingBookAsMap["isbn"]; hasISBN {
-		_, isbnIsString := isbn.(string)
-		if !isbnIsString {
-			return errors.New("ISBN provided is not of type string.") // Tested in "Incorrect ISBN Type" test of CreateBook in Postman
-		}
-	}
-
-	// Assuming State is present, is it valid?
-	if state, hasState := incomingBookAsMap["state"]; hasState {
-		state, stateIsString := state.(string)
-		if !stateIsString {
-			return errors.New("State provided is not of type string.") // Tested in "Incorrect State Type" test of UpdateBook in Postman
-		}
-
-		if ((state != "available") && (state != "on-hold") && (state != "checked-out")) {
-			return errors.New("Invalid state provided. State must be equal to one of: \"available\", \"on-hold\", or \"checked-out\".")
-			// Tested in "Invalid State" test of UpdateBook in Postman
-		}
-	}
-
-	return nil
-}
-
-func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
-	fmt.Println("CALLING ValidateIDSemanticsForCreateBook...")
-
-	// This function will only be called once state is established to be both present and valid
-	state := incomingBookAsMap["state"]
-	
-	// Retrieve the customer ID's if they are present
-	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
-	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
-
-	// State is available -- THIS IS SEMANTIC CHECKING
-	if (state == "available") {
-		if ((hasOnHoldCustomerID) && (!hasCheckedOutCustomerID)) {
-			return errors.New("Cannot have an on-hold customer ID when state is available.")
-		}
-
-		if (!(hasOnHoldCustomerID) && (hasCheckedOutCustomerID)) {
-			return errors.New("Cannot have checked-out customer ID when state is available.")
-		}
-		
-		if (hasOnHoldCustomerID || hasCheckedOutCustomerID) {
-			return errors.New("Cannot have on-hold customer ID or checked-out customer ID when state is available.")
-		}
-	}
-
-	// State is on-hold -- THIS IS SEMANTIC CHECKING
-	if (state == "on-hold") {
-		if hasCheckedOutCustomerID {
-			return errors.New("Cannot have checked-out customer ID when state is on-hold.")
-		}
-
-		if hasOnHoldCustomerID {
-			// We know ohid is provided. Ensure it is a string
-			ohid, ohidIsString := incomingBookAsMap["onholdcustomerid"].(string)
-			if !ohidIsString {
-				return errors.New("On-hold customer ID provided is not of type string.")
-			}
-
-			if (ohid == "") {
-				return errors.New("On-hold customer ID is the empty string.")
-			}
-		} else { // !hasOnHoldCustomerID
-			return errors.New("State provided is on-hold, but no on-hold customer ID is provided.")
-		}
-	}
-
-	// State is checked-out -- THIS IS SEMANTIC CHECKING
-	if (state == "checked-out") {
-		if hasOnHoldCustomerID {
-			return errors.New("Cannot have on-hold customer ID when state is checked-out.")
-		}
-
-		if hasCheckedOutCustomerID {
-			// We know ohid is provided. Ensure it is a string
-			coid, coidIsString := incomingBookAsMap["checkedoutcustomerid"].(string)
-			if !coidIsString {
-				return errors.New("Checked-out customer ID provided is not of type string.")
-			}
-
-			if (coid == "") {
-				return errors.New("Checked-out customer ID is the empty string.")
-			}
-		} else { // !hasCheckedOutCustomerID
-			return errors.New("State provided is checked-out, but no checked-out customer ID is provided.")
-		}
-	}
-
-	return nil
-}
-
-func ValidateTimeSemantics(incomingBookAsMap map[string]interface{}) (error) {
-	fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
-
-	_, hasTimeCreated := incomingBookAsMap["timecreated"]
-	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
-
-	if (hasTimeCreated && !hasTimeUpdated) {
-		return errors.New("Client cannot provide time created.")
-	}
-
-	if (!hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time updated.")
-	}
-
-	if (hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time created or time updated.")
-	}
-
-	return nil
-}
-
 // POST
 func CreateBook(c *gin.Context) {
-	var newBook *Book = &Book{nil, nil, nil, nil, nil, nil}
+	var newBook *book.Book = &book.Book{
+		ISBN: nil, 
+		State: nil, 
+		OnHoldCustomerID: nil, 
+		CheckedOutCustomerID: nil, 
+		TimeCreated: nil, 
+		TimeUpdated: nil,}
 
 	// Unmarshal
 	incomingBookAsMap := map[string]interface{}{}
@@ -271,7 +152,7 @@ func CreateBook(c *gin.Context) {
 		// (2) Before checking if ISBN is in-use (we want to ensure it's valid before checking if it's in-use)
 
 	// Validate ISBN and State Syntax
-	if err := ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
+	if err := validators.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -285,7 +166,7 @@ func CreateBook(c *gin.Context) {
 	}
 
 	// Validate Time Semantics
-	if err := ValidateTimeSemantics(incomingBookAsMap); err != nil {
+	if err := validators.ValidateTimeSemantics(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -303,7 +184,7 @@ func CreateBook(c *gin.Context) {
 	}
 
 	// Ensure correct customer ID fields are provided given the state
-	if err := ValidateIDSemanticsForCreateBook(incomingBookAsMap); err != nil {
+	if err := validators.ValidateIDSemanticsForCreateBook(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -350,53 +231,6 @@ func DeleteBook(c *gin.Context) {
 	c.Status(http.StatusNoContent) // 204 status code if successful
 }
 
-// Semantic Validation for Checkout and Return
-func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *Book) (error) {
-	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
-	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
-	
-	fmt.Println("CALLING ValidateIDSemanticsForCheckedOutUpdate...")
-	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
-	onHoldCustomerID := incomingRequest.OnHoldCustomerID
-
-	if (checkedOutCustomerID == nil && onHoldCustomerID == nil) {
-		return errors.New("Expected checked-out customer ID.")
-	}
-
-	if (checkedOutCustomerID != nil && onHoldCustomerID != nil) {
-		return errors.New("Did not expect on-hold customer ID.")
-	}
-
-	if (checkedOutCustomerID == nil && onHoldCustomerID != nil) {
-		return errors.New("Expected checked-out customer ID, and did not expect on-hold customer ID.")
-	}
-
-	return nil
-}
-
-// Semantic Validation for PlaceHold and ReleaseHold
-func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *Book) (error) {
-	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
-	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
-	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
-	onHoldCustomerID := incomingRequest.OnHoldCustomerID
-
-	fmt.Println("CALLING ValidateIDSemanticsForOnHoldUpdate...")
-	if (onHoldCustomerID == nil && checkedOutCustomerID == nil) {
-		return errors.New("Expected on-hold customer ID.")
-	}
-
-	if (onHoldCustomerID != nil && checkedOutCustomerID != nil) {
-		return errors.New("Did not expect checked-out customer ID.")
-	}
-
-	if (onHoldCustomerID == nil && checkedOutCustomerID != nil) {
-		return errors.New("Expected on-hold customer ID, and did not expect checked-out customer ID.")
-	}
-
-	return nil
-}
-
 // No Match Error
 var NoMatchError error = errors.New("ID's do not match.")
 
@@ -404,8 +238,8 @@ var NoMatchError error = errors.New("ID's do not match.")
 	// available --> checked-out
 	// on-hold --> checked-out
 	// checked-out --> checked-out
-func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
-	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+func Checkout(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+	if err := validators.ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -437,15 +271,15 @@ func Checkout(currentBook *Book, incomingBook *Book) (*Book, error) {
 
 // Conflict
 	// checked-out --> on-hold
-func Conflict(currentBook *Book, incomingBook *Book) (*Book, error) {
+func Conflict(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
 	return nil, errors.New("Invalid state transfer requested.")
 }
 
 // PlaceHold
 	// available --> on-hold
 	// on-hold --> on-hold
-func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
-	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+func PlaceHold(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+	if err := validators.ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -468,8 +302,8 @@ func PlaceHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 
 // ReleaseHold
 	// on-hold --> available
-func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
-	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+func ReleaseHold(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+	if err := validators.ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -488,10 +322,10 @@ func ReleaseHold(currentBook *Book, incomingBook *Book) (*Book, error) {
 
 // Return
 	// checked-out --> available
-func Return(currentBook *Book, incomingBook *Book) (*Book, error) {
+func Return(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
 	fmt.Println("CALLING RETURNBOOK...")
 
-	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+	if err := validators.ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -511,12 +345,12 @@ func Return(currentBook *Book, incomingBook *Book) (*Book, error) {
 // NoOperation
 	// available --> available
 	// on-hold --> on-hold (when ID's match)
-func NoOperation(currentBook *Book, incomingBook *Book) (*Book, error) {
+func NoOperation(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
 	return currentBook, nil
 }
 
 // First key is current state, 2nd key is incoming state
-var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Book) (*Book, error) {
+var actionTable = map[string]map[string]func(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
 	"available": {
 		"available": NoOperation,
 		"checked-out": Checkout,
@@ -536,13 +370,13 @@ var actionTable = map[string]map[string]func(currentBook *Book, incomingBook *Bo
 func UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	book, err := bookByISBN(isbn)
+	currentBook, err := bookByISBN(isbn)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
 		return
 	}
 
-	if book == nil {
+	if currentBook == nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
 		return
 	}	
@@ -555,26 +389,34 @@ func UpdateBook(c *gin.Context) {
 	}
 
 	// Validate ISBN and State Syntax
-	if err := ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
+	if err := validators.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
 	// Validate Time Semantics
-	if err := ValidateTimeSemantics(incomingBookAsMap); err != nil {
+	if err := validators.ValidateTimeSemantics(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
-	currentState := book.State // this is a pointer
+	currentState := currentBook.State // this is a pointer
 
 	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
 
-		// Type assertion - needed because bookAsMap values are of type interface{}
+		// Type assertion - needed because currentBookAsMap values are of type interface{}
 		incomingState := incomingState.(string) // Type assertion
 		incomingISBN := incomingBookAsMap["isbn"].(string) // Type assertion
 
-		var incomingRequest *Book = &Book{&incomingISBN, ToPtr(incomingState), nil, nil, nil, nil}
+		// THE REASON WE HAVE A PROBLEM HERE IS THAT WE HAVE A LOCAL VARIABLE ALSO CALLED BOOK....
+		var incomingRequest *book.Book = &book.Book{
+			ISBN: &incomingISBN, 
+			State: ToPtr(incomingState), 
+			OnHoldCustomerID: nil, 
+			CheckedOutCustomerID: nil, 
+			TimeCreated: nil, 
+			TimeUpdated: nil,
+		}
 
 		if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
@@ -586,7 +428,7 @@ func UpdateBook(c *gin.Context) {
 			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
 		}
 
-		book, err = actionTable[*currentState][incomingState](book, incomingRequest)
+		currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingRequest)
 
 		if err != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
@@ -597,7 +439,7 @@ func UpdateBook(c *gin.Context) {
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, book)
+	c.IndentedJSON(http.StatusOK, currentBook)
 }
 
 func main() {
