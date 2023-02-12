@@ -1,9 +1,9 @@
 package main
 
-import ( // book.
+import ( 
 	// "example/library_project/handlers"
 	"example/library_project/validators"
-	"example/library_project/book"
+	"example/library_project/models"
 	
 
 
@@ -24,36 +24,36 @@ func ToPtr[T string|time.Time](v T) *T {
 }
 
 // First test of instantiating test data with new schema and ToPtr function
-var bookInstance00 book.Book = book.Book{ISBN: ToPtr("00"), State: ToPtr("on-hold"), OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Now())}
+var bookInstance00 models.Book = models.Book{ISBN: ToPtr("00"), State: ToPtr("on-hold"), OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Now())}
 
 // Actual test data to be used in testing
-var bookInstance0 book.Book = book.Book{ISBN: ToPtr("0000"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
-var bookInstance1 book.Book = book.Book{ISBN: ToPtr("0001"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
-var bookInstance2 book.Book = book.Book{ISBN: ToPtr("0002"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold
+var bookInstance0 models.Book = models.Book{ISBN: ToPtr("0000"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
+var bookInstance1 models.Book = models.Book{ISBN: ToPtr("0001"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
+var bookInstance2 models.Book = models.Book{ISBN: ToPtr("0002"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold
 
-var bookInstance3 book.Book = book.Book{ISBN: ToPtr("0003"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
-var bookInstance4 book.Book = book.Book{ISBN: ToPtr("0004"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
-var bookInstance5 book.Book = book.Book{ISBN: ToPtr("0005"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
-var bookInstance6 book.Book = book.Book{ISBN: ToPtr("0006"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
-var bookInstance7 book.Book = book.Book{ISBN: ToPtr("0007"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
-var bookInstance8 book.Book = book.Book{ISBN: ToPtr("0008"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
+var bookInstance3 models.Book = models.Book{ISBN: ToPtr("0003"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
+var bookInstance4 models.Book = models.Book{ISBN: ToPtr("0004"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
+var bookInstance5 models.Book = models.Book{ISBN: ToPtr("0005"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
+var bookInstance6 models.Book = models.Book{ISBN: ToPtr("0006"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
+var bookInstance7 models.Book = models.Book{ISBN: ToPtr("0007"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
+var bookInstance8 models.Book = models.Book{ISBN: ToPtr("0008"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
 
-var bookInstance9 book.Book =  book.Book{ISBN: ToPtr("0009"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
-var bookInstance10 book.Book = book.Book{ISBN: ToPtr("0010"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
-var bookInstance11 book.Book = book.Book{ISBN: ToPtr("0011"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
-var bookInstance12 book.Book = book.Book{ISBN: ToPtr("0012"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
-var bookInstance13 book.Book = book.Book{ISBN: ToPtr("0013"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
-var bookInstance14 book.Book = book.Book{ISBN: ToPtr("0014"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
+var bookInstance9 models.Book =  models.Book{ISBN: ToPtr("0009"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
+var bookInstance10 models.Book = models.Book{ISBN: ToPtr("0010"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
+var bookInstance11 models.Book = models.Book{ISBN: ToPtr("0011"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
+var bookInstance12 models.Book = models.Book{ISBN: ToPtr("0012"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
+var bookInstance13 models.Book = models.Book{ISBN: ToPtr("0013"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
+var bookInstance14 models.Book = models.Book{ISBN: ToPtr("0014"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
 
-var bookInstance15 book.Book = book.Book{ISBN: ToPtr("0015"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> This is the book to be deleted in testing
+var bookInstance15 models.Book = models.Book{ISBN: ToPtr("0015"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> This is the book to be deleted in testing
 
 // The following are for UpdateBook ID semantics validation
-var bookInstance16 book.Book = book.Book{ISBN: ToPtr("0016"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} 
-var bookInstance17 book.Book = book.Book{ISBN: ToPtr("0017"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
-var bookInstance18 book.Book = book.Book{ISBN: ToPtr("0018"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
+var bookInstance16 models.Book = models.Book{ISBN: ToPtr("0016"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} 
+var bookInstance17 models.Book = models.Book{ISBN: ToPtr("0017"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
+var bookInstance18 models.Book = models.Book{ISBN: ToPtr("0018"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
 
 // Map of test data to be used in testing
-var mapOfBooks = map[string]*book.Book{
+var mapOfBooks = map[string]*models.Book{
 	"00" : &bookInstance00,
 
 	"0000" : &bookInstance0,
@@ -84,7 +84,7 @@ var mapOfBooks = map[string]*book.Book{
 // GET (all books)
 func GetAllBooks(c *gin.Context) {
 	// Make a slice containing all the values from mapOfBooks
-	var vals []*book.Book
+	var vals []*models.Book
 	
 	for _, v := range mapOfBooks {
 		vals = append(vals, v)
@@ -94,7 +94,7 @@ func GetAllBooks(c *gin.Context) {
 }
 
 // Helper function for GET (individual book)
-func bookByISBN(isbn string) (*book.Book, error) {
+func bookByISBN(isbn string) (*models.Book, error) {
 	bookPtr, ok := mapOfBooks[isbn] // in the future, this could be a call to a database
 	// if there is an error connecting to the database, then we will return: nil, InternalServerError
 
@@ -125,7 +125,7 @@ func GetIndividualBook(c *gin.Context) {
 
 // POST
 func CreateBook(c *gin.Context) {
-	var newBook *book.Book = &book.Book{
+	var newBook *models.Book = &models.Book{
 		ISBN: nil, 
 		State: nil, 
 		OnHoldCustomerID: nil, 
@@ -238,7 +238,7 @@ var NoMatchError error = errors.New("ID's do not match.")
 	// available --> checked-out
 	// on-hold --> checked-out
 	// checked-out --> checked-out
-func Checkout(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+func Checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	if err := validators.ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
@@ -271,14 +271,14 @@ func Checkout(currentBook *book.Book, incomingBook *book.Book) (*book.Book, erro
 
 // Conflict
 	// checked-out --> on-hold
-func Conflict(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+func Conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	return nil, errors.New("Invalid state transfer requested.")
 }
 
 // PlaceHold
 	// available --> on-hold
 	// on-hold --> on-hold
-func PlaceHold(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	if err := validators.ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
@@ -302,7 +302,7 @@ func PlaceHold(currentBook *book.Book, incomingBook *book.Book) (*book.Book, err
 
 // ReleaseHold
 	// on-hold --> available
-func ReleaseHold(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+func ReleaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	if err := validators.ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
@@ -322,7 +322,7 @@ func ReleaseHold(currentBook *book.Book, incomingBook *book.Book) (*book.Book, e
 
 // Return
 	// checked-out --> available
-func Return(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+func Return(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	fmt.Println("CALLING RETURNBOOK...")
 
 	if err := validators.ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
@@ -345,12 +345,12 @@ func Return(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error)
 // NoOperation
 	// available --> available
 	// on-hold --> on-hold (when ID's match)
-func NoOperation(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+func NoOperation(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	return currentBook, nil
 }
 
 // First key is current state, 2nd key is incoming state
-var actionTable = map[string]map[string]func(currentBook *book.Book, incomingBook *book.Book) (*book.Book, error) {
+var actionTable = map[string]map[string]func(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	"available": {
 		"available": NoOperation,
 		"checked-out": Checkout,
@@ -409,7 +409,7 @@ func UpdateBook(c *gin.Context) {
 		incomingISBN := incomingBookAsMap["isbn"].(string) // Type assertion
 
 		// THE REASON WE HAVE A PROBLEM HERE IS THAT WE HAVE A LOCAL VARIABLE ALSO CALLED BOOK....
-		var incomingRequest *book.Book = &book.Book{
+		var incomingRequest *models.Book = &models.Book{
 			ISBN: &incomingISBN, 
 			State: ToPtr(incomingState), 
 			OnHoldCustomerID: nil, 

@@ -1,8 +1,8 @@
 package validators
 
-import (
+import ( 
 	"errors"
-	"example/library_project/book"
+	"example/library_project/models"
 	// "time"
 	// "fmt"
 	// "reflect"
@@ -131,7 +131,7 @@ func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) 
 }
 
 // Semantic Validation for Checkout and Return
-func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *book.Book) (error) {
+func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error) {
 	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
 	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
 	
@@ -155,7 +155,7 @@ func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *book.Book) (error) 
 }
 
 // Semantic Validation for PlaceHold and ReleaseHold
-func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *book.Book) (error) {
+func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
 	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
 	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
 	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
