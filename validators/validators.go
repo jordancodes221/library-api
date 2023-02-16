@@ -1,6 +1,6 @@
 package validators
 
-import ( 
+import ( // models.
 	"errors"
 	"example/library_project/models"
 	// "time"
