@@ -1,8 +1,8 @@
 package handlers
 
-import ( // ValidateTimeSemanticsForCreateBook
+import ( // ValidateISBNAndStateSyntax
 	"example/library_project/models"
-	
+
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -103,7 +103,7 @@ func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) 
 }
 
 // POST
-func CreateBook(c *gin.Context) {
+func CreateBook(c *gin.Context) { 
 	var newBook *models.Book = &models.Book{
 		ISBN: nil, 
 		State: nil, 
