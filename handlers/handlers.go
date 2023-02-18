@@ -152,7 +152,7 @@ func CreateBook(c *gin.Context) {
 		// (2) Before checking if ISBN is in-use (we want to ensure it's valid before checking if it's in-use)
 
 	// Validate ISBN and State Syntax
-	if err := validators.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
+	if err := models.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -389,7 +389,7 @@ func UpdateBook(c *gin.Context) {
 	}
 
 	// Validate ISBN and State Syntax
-	if err := validators.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
+	if err := models.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
