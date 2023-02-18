@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"example/library_project/validators"
 	"example/library_project/models"
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -33,6 +32,54 @@ func ValidateTimeSemanticsForUpdateBook(incomingBookAsMap map[string]interface{}
 	return nil
 }
 
+
+// Semantic Validation for Checkout and Return
+func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error) {
+	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
+	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
+	
+	// fmt.Println("CALLING ValidateIDSemanticsForCheckedOutUpdate...")
+	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
+	onHoldCustomerID := incomingRequest.OnHoldCustomerID
+
+	if (checkedOutCustomerID == nil && onHoldCustomerID == nil) {
+		return errors.New("Expected checked-out customer ID.")
+	}
+
+	if (checkedOutCustomerID != nil && onHoldCustomerID != nil) {
+		return errors.New("Did not expect on-hold customer ID.")
+	}
+
+	if (checkedOutCustomerID == nil && onHoldCustomerID != nil) {
+		return errors.New("Expected checked-out customer ID, and did not expect on-hold customer ID.")
+	}
+
+	return nil
+}
+
+// Semantic Validation for PlaceHold and ReleaseHold
+func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
+	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
+	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
+	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
+	onHoldCustomerID := incomingRequest.OnHoldCustomerID
+
+	// fmt.Println("CALLING ValidateIDSemanticsForOnHoldUpdate...")
+	if (onHoldCustomerID == nil && checkedOutCustomerID == nil) {
+		return errors.New("Expected on-hold customer ID.")
+	}
+
+	if (onHoldCustomerID != nil && checkedOutCustomerID != nil) {
+		return errors.New("Did not expect checked-out customer ID.")
+	}
+
+	if (onHoldCustomerID == nil && checkedOutCustomerID != nil) {
+		return errors.New("Expected on-hold customer ID, and did not expect checked-out customer ID.")
+	}
+
+	return nil
+}
+
 // No Match Error
 var NoMatchError error = errors.New("ID's do not match.")
 
@@ -41,7 +88,7 @@ var NoMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func Checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := validators.ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -81,7 +128,7 @@ func Conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	// available --> on-hold
 	// on-hold --> on-hold
 func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := validators.ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -105,7 +152,7 @@ func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 // ReleaseHold
 	// on-hold --> available
 func ReleaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := validators.ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -127,7 +174,7 @@ func ReleaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 func Return(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	fmt.Println("CALLING RETURNBOOK...")
 
-	if err := validators.ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 

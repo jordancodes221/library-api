@@ -1,7 +1,6 @@
 package handlers
 
 import ( // ValidateTimeSemanticsForCreateBook
-	"example/library_project/validators"
 	"example/library_project/models"
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -27,6 +26,76 @@ func ValidateTimeSemanticsForCreateBook(incomingBookAsMap map[string]interface{}
 
 	if (hasTimeCreated && hasTimeUpdated) {
 		return errors.New("Client cannot provide time created or time updated.")
+	}
+
+	return nil
+}
+
+func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
+	// fmt.Println("CALLING ValidateIDSemanticsForCreateBook...")
+
+	// This function will only be called once state is established to be both present and valid
+	state := incomingBookAsMap["state"]
+	
+	// Retrieve the customer ID's if they are present
+	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
+	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
+
+	// State is available -- THIS IS SEMANTIC CHECKING
+	if (state == "available") {
+		if ((hasOnHoldCustomerID) && (!hasCheckedOutCustomerID)) {
+			return errors.New("Cannot have an on-hold customer ID when state is available.")
+		}
+
+		if (!(hasOnHoldCustomerID) && (hasCheckedOutCustomerID)) {
+			return errors.New("Cannot have checked-out customer ID when state is available.")
+		}
+		
+		if (hasOnHoldCustomerID || hasCheckedOutCustomerID) {
+			return errors.New("Cannot have on-hold customer ID or checked-out customer ID when state is available.")
+		}
+	}
+
+	// State is on-hold -- THIS IS SEMANTIC CHECKING
+	if (state == "on-hold") {
+		if hasCheckedOutCustomerID {
+			return errors.New("Cannot have checked-out customer ID when state is on-hold.")
+		}
+
+		if hasOnHoldCustomerID {
+			// We know ohid is provided. Ensure it is a string
+			ohid, ohidIsString := incomingBookAsMap["onholdcustomerid"].(string)
+			if !ohidIsString {
+				return errors.New("On-hold customer ID provided is not of type string.")
+			}
+
+			if (ohid == "") {
+				return errors.New("On-hold customer ID is the empty string.")
+			}
+		} else { // !hasOnHoldCustomerID
+			return errors.New("State provided is on-hold, but no on-hold customer ID is provided.")
+		}
+	}
+
+	// State is checked-out -- THIS IS SEMANTIC CHECKING
+	if (state == "checked-out") {
+		if hasOnHoldCustomerID {
+			return errors.New("Cannot have on-hold customer ID when state is checked-out.")
+		}
+
+		if hasCheckedOutCustomerID {
+			// We know ohid is provided. Ensure it is a string
+			coid, coidIsString := incomingBookAsMap["checkedoutcustomerid"].(string)
+			if !coidIsString {
+				return errors.New("Checked-out customer ID provided is not of type string.")
+			}
+
+			if (coid == "") {
+				return errors.New("Checked-out customer ID is the empty string.")
+			}
+		} else { // !hasCheckedOutCustomerID
+			return errors.New("State provided is checked-out, but no checked-out customer ID is provided.")
+		}
 	}
 
 	return nil
@@ -93,7 +162,7 @@ func CreateBook(c *gin.Context) {
 	}
 
 	// Ensure correct customer ID fields are provided given the state
-	if err := validators.ValidateIDSemanticsForCreateBook(incomingBookAsMap); err != nil {
+	if err := ValidateIDSemanticsForCreateBook(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
