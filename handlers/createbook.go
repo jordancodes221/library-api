@@ -1,13 +1,36 @@
 package handlers
 
-import ( 
+import ( // ValidateTimeSemanticsForCreateBook
 	"example/library_project/validators"
 	"example/library_project/models"
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"time"
 	"encoding/json"
+	"errors"
 )
+
+// Validate Time Semantics
+func ValidateTimeSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
+	// fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
+
+	_, hasTimeCreated := incomingBookAsMap["timecreated"]
+	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
+
+	if (hasTimeCreated && !hasTimeUpdated) {
+		return errors.New("Client cannot provide time created.")
+	}
+
+	if (!hasTimeCreated && hasTimeUpdated) {
+		return errors.New("Client cannot provide time updated.")
+	}
+
+	if (hasTimeCreated && hasTimeUpdated) {
+		return errors.New("Client cannot provide time created or time updated.")
+	}
+
+	return nil
+}
 
 // POST
 func CreateBook(c *gin.Context) {
@@ -52,7 +75,7 @@ func CreateBook(c *gin.Context) {
 	}
 
 	// Validate Time Semantics
-	if err := validators.ValidateTimeSemantics(incomingBookAsMap); err != nil {
+	if err := ValidateTimeSemanticsForCreateBook(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}

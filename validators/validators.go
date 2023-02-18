@@ -13,27 +13,6 @@ import ( // models.
 //////////////////////////// Semantic Validation ////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 
-func ValidateTimeSemantics(incomingBookAsMap map[string]interface{}) (error) {
-	// fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
-
-	_, hasTimeCreated := incomingBookAsMap["timecreated"]
-	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
-
-	if (hasTimeCreated && !hasTimeUpdated) {
-		return errors.New("Client cannot provide time created.")
-	}
-
-	if (!hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time updated.")
-	}
-
-	if (hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time created or time updated.")
-	}
-
-	return nil
-}
-
 func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
 	// fmt.Println("CALLING ValidateIDSemanticsForCreateBook...")
 
