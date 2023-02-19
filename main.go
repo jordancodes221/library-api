@@ -56,6 +56,12 @@ func main() {
 	var bookInstance17 *models.Book = &models.Book{ISBN: ToPtr("0017"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
 	var bookInstance18 *models.Book = &models.Book{ISBN: ToPtr("0018"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
 
+	// The follwing are for UpdateBook Time validation
+	arbitraryTime, _ := time.Parse(time.RFC3339, "2023-02-18T15:45:00Z")
+	var bookInstance19 *models.Book = &models.Book{ISBN: ToPtr("0019"), State: ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(arbitraryTime), TimeUpdated: ToPtr(time.Time{})}
+	var bookInstance20 *models.Book = &models.Book{ISBN: ToPtr("0020"), State: ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Time{}), TimeUpdated: ToPtr(arbitraryTime)}
+	var bookInstance21 *models.Book = &models.Book{ISBN: ToPtr("0021"), State: ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Time{}), TimeUpdated: ToPtr(time.Time{})}
+
 	// Map of test data to be used in testing
 	var mapOfBooks = map[string]*models.Book{
 		"00" : bookInstance00,
@@ -83,6 +89,10 @@ func main() {
 		"0016" : bookInstance16,
 		"0017" : bookInstance17,
 		"0018" : bookInstance18,
+
+		"0019" : bookInstance19,
+		"0020" : bookInstance20,
+		"0021" : bookInstance21,				
 	}
 
 	router := gin.Default()

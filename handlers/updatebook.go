@@ -12,24 +12,39 @@ import ( // h.books, h.bookByISBN
 )
 
 // Validate Time Semantics
-func ValidateTimeSemanticsForUpdateBook(incomingBookAsMap map[string]interface{}) (error) {
-	// fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
+func ValidateTimeSemanticsForUpdateBook(currentBook *models.Book, incomingBookAsMap map[string]interface{}) (error) {
+	fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
 
-	_, hasTimeCreated := incomingBookAsMap["timecreated"]
-	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
+	currentTimeCreated := *currentBook.TimeCreated
+	if incomingTimeCreatedUnparsed, ok := incomingBookAsMap["timecreated"]; ok {
+		incomingTimeCreatedUnparsed := incomingTimeCreatedUnparsed.(string)
+		incomingTimeCreated, _ := time.Parse(time.RFC3339, incomingTimeCreatedUnparsed)
+		
+		fmt.Print("CURRENT TIME CREATED: ")
+		fmt.Println(currentTimeCreated)
+		fmt.Print("REQUESTED TIME CREATED: ")
+		fmt.Println(incomingTimeCreated)
 
-	if (hasTimeCreated && !hasTimeUpdated) {
-		return errors.New("Client cannot provide time created.")
+		if currentTimeCreated != incomingTimeCreated {
+			return errors.New("Requested time created does not match existing time created.")
+		}
 	}
 
-	if (!hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time updated.")
+	currentTimeUpdated := *currentBook.TimeUpdated
+	if incomingTimeUpdatedUnparsed, ok := incomingBookAsMap["timeupdated"]; ok {
+		incomingTimeUpdatedUnparsed := incomingTimeUpdatedUnparsed.(string)
+		incomingTimeUpdated, _ := time.Parse(time.RFC3339, incomingTimeUpdatedUnparsed)
+		
+		fmt.Print("CURRENT TIME UPDATED: ")
+		fmt.Println(currentTimeUpdated)
+		fmt.Print("REQUESTED TIME UPDATED: ")
+		fmt.Println(incomingTimeUpdated)
+		
+		if currentTimeUpdated != incomingTimeUpdated {
+			return errors.New("Requested time updated does not match existing time updated.")
+		}
 	}
-
-	if (hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time created or time updated.")
-	}
-
+	
 	return nil
 }
 
@@ -245,7 +260,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}
 
 	// Validate Time Semantics
-	if err := ValidateTimeSemanticsForUpdateBook(incomingBookAsMap); err != nil {
+	if err := ValidateTimeSemanticsForUpdateBook(currentBook, incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
