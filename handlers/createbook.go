@@ -1,6 +1,6 @@
 package handlers
 
-import ( // ValidateISBNAndStateSyntax
+import ( // h.Books, bookByISBN
 	"example/library_project/models"
 
 	"net/http"
@@ -103,7 +103,7 @@ func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) 
 }
 
 // POST
-func CreateBook(c *gin.Context) { 
+func (h *BooksHandler) CreateBook(c *gin.Context) { 
 	var newBook *models.Book = &models.Book{
 		ISBN: nil, 
 		State: nil, 
@@ -139,7 +139,7 @@ func CreateBook(c *gin.Context) {
 	// Make sure ISBN is not already in-use
 		// At this point, we know that ISBN (1) is present, and (2) is valid
 	incomingISBN := incomingBookAsMap["isbn"].(string)
-	if _, ok := mapOfBooks[incomingISBN]; ok {
+	if _, ok := h.Books[incomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
@@ -184,8 +184,8 @@ func CreateBook(c *gin.Context) {
 	newBook.TimeCreated = ToPtr(time.Now())
 	newBook.TimeUpdated = nil
 
-	// Add newBook to mapOfBooks
-	mapOfBooks[*newBook.ISBN] = newBook
+	// Add newBook to h.Books
+	h.Books[*newBook.ISBN] = newBook
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }

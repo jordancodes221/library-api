@@ -1,6 +1,6 @@
 package handlers
 
-import ( 
+import ( // h.Books, bookByISBN
 	"example/library_project/models"
 	
 	"net/http"
@@ -8,11 +8,11 @@ import (
 )
 
 // GET (all books)
-func GetAllBooks(c *gin.Context) {
+func (h *BooksHandler) GetAllBooks(c *gin.Context) {
 	// Make a slice containing all the values from mapOfBooks
 	var vals []*models.Book
 	
-	for _, v := range mapOfBooks {
+	for _, v := range h.Books { // should change mapOfBooks to h.Books
 		vals = append(vals, v)
 	}
 
@@ -20,9 +20,9 @@ func GetAllBooks(c *gin.Context) {
 }
 
 // GET (individual book)
-func GetIndividualBook(c *gin.Context) {
+func (h *BooksHandler) GetIndividualBook(c *gin.Context) {
 	isbn := c.Param("isbn")
-	book, err := bookByISBN(isbn)
+	book, err := h.bookByISBN(isbn)
 
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()}) // 500 status code if unsuccessful

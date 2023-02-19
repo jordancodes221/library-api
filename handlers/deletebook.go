@@ -1,15 +1,15 @@
 package handlers
 
-import ( 	
+import ( 	 // h.Books, bookByISBN
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
 // DELETE
-func DeleteBook(c *gin.Context) {
+func (h *BooksHandler) DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	book, err := bookByISBN(isbn)
+	book, err := h.bookByISBN(isbn)
 
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()}) // 500 status code
@@ -21,6 +21,6 @@ func DeleteBook(c *gin.Context) {
 		return
 	}
 
-	delete(mapOfBooks, isbn)
+	delete(h.Books, isbn)
 	c.Status(http.StatusNoContent) // 204 status code if successful
 }

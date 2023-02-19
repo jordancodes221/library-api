@@ -1,6 +1,6 @@
 package handlers
 
-import (
+import ( // h.books, h.bookByISBN
 	"example/library_project/models"
 	
 	"net/http"
@@ -217,10 +217,10 @@ var actionTable = map[string]map[string]func(currentBook *models.Book, incomingB
 }
 
 // PATCH
-func UpdateBook(c *gin.Context) {
+func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	currentBook, err := bookByISBN(isbn)
+	currentBook, err := h.bookByISBN(isbn)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
 		return

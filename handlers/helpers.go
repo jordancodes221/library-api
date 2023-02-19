@@ -1,6 +1,6 @@
 package handlers
 
-import ( 
+import ( // h.Books
 	"example/library_project/models"
 	
 	"time"
@@ -12,8 +12,8 @@ func ToPtr[T string|time.Time](v T) *T {
 }
 
 // Helper function
-func bookByISBN(isbn string) (*models.Book, error) {
-	bookPtr, ok := mapOfBooks[isbn] // in the future, this could be a call to a database
+func (h *BooksHandler) bookByISBN(isbn string) (*models.Book, error) {
+	bookPtr, ok := h.Books[isbn] // in the future, this could be a call to a database
 	// if there is an error connecting to the database, then we will return: nil, InternalServerError
 
 	if ok {
