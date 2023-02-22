@@ -18,11 +18,11 @@ func ValidateTimeSemanticsForCreateBook(incomingBookAsMap map[string]interface{}
 	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
 
 	if hasTimeCreated {
-		return errors.New("Client cannot provide time created.")
+		return errors.New("Client cannot provide time created when creating a new book.")
 	}
 
 	if hasTimeUpdated {
-		return errors.New("Client cannot provide time updated.")
+		return errors.New("Client cannot provide time updated when creating a new book.")
 	}
 
 	return nil
