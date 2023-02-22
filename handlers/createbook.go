@@ -10,26 +10,11 @@ import ( // h.Books, bookByISBN
 	"errors"
 )
 
-// Validate Time Semantics
-func ValidateTimeSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
-	// fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
+// Semantic validation
+func ValidateSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
+	// fmt.Println("CALLING ValidateSemanticsForCreateBook...")
 
-	_, hasTimeCreated := incomingBookAsMap["timecreated"]
-	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
-
-	if hasTimeCreated {
-		return errors.New("Client cannot provide time created when creating a new book.")
-	}
-
-	if hasTimeUpdated {
-		return errors.New("Client cannot provide time updated when creating a new book.")
-	}
-
-	return nil
-}
-
-func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
-	// fmt.Println("CALLING ValidateIDSemanticsForCreateBook...")
+	////////// ID semantics
 
 	// This function will only be called once state is established to be both present and valid
 	state := incomingBookAsMap["state"]
@@ -92,6 +77,18 @@ func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) 
 		}
 	}
 
+	////////// Time Semantics
+	_, hasTimeCreated := incomingBookAsMap["timecreated"]
+	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
+
+	if hasTimeCreated {
+		return errors.New("Client cannot provide time created when creating a new book.")
+	}
+
+	if hasTimeUpdated {
+		return errors.New("Client cannot provide time updated when creating a new book.")
+	}
+
 	return nil
 }
 
@@ -129,17 +126,17 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 		return
 	}
 
+	// Validate semantics
+	if err := ValidateSemanticsForCreateBook(incomingBookAsMap); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
+
 	// Make sure ISBN is not already in-use
 		// At this point, we know that ISBN (1) is present, and (2) is valid
 	incomingISBN := incomingBookAsMap["isbn"].(string)
 	if _, ok := h.Books[incomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
-		return
-	}
-
-	// Validate Time Semantics
-	if err := ValidateTimeSemanticsForCreateBook(incomingBookAsMap); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
@@ -152,12 +149,6 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 		newBook.State = ToPtr(incomingState)
 	} else {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing State in the incoming request."})
-		return
-	}
-
-	// Ensure correct customer ID fields are provided given the state
-	if err := ValidateIDSemanticsForCreateBook(incomingBookAsMap); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
