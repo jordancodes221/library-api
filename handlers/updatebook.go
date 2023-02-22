@@ -58,16 +58,12 @@ func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error
 	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
 	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
-	if (checkedOutCustomerID == nil && onHoldCustomerID == nil) {
+	if (checkedOutCustomerID == nil) {
 		return errors.New("Expected checked-out customer ID.")
 	}
 
-	if (checkedOutCustomerID != nil && onHoldCustomerID != nil) {
+	if (onHoldCustomerID != nil) {
 		return errors.New("Did not expect on-hold customer ID.")
-	}
-
-	if (checkedOutCustomerID == nil && onHoldCustomerID != nil) {
-		return errors.New("Expected checked-out customer ID, and did not expect on-hold customer ID.")
 	}
 
 	return nil
@@ -81,16 +77,12 @@ func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
 	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
 	// fmt.Println("CALLING ValidateIDSemanticsForOnHoldUpdate...")
-	if (onHoldCustomerID == nil && checkedOutCustomerID == nil) {
+	if (onHoldCustomerID == nil) {
 		return errors.New("Expected on-hold customer ID.")
 	}
 
-	if (onHoldCustomerID != nil && checkedOutCustomerID != nil) {
+	if (checkedOutCustomerID != nil) {
 		return errors.New("Did not expect checked-out customer ID.")
-	}
-
-	if (onHoldCustomerID == nil && checkedOutCustomerID != nil) {
-		return errors.New("Expected on-hold customer ID, and did not expect checked-out customer ID.")
 	}
 
 	return nil
