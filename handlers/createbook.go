@@ -17,16 +17,12 @@ func ValidateTimeSemanticsForCreateBook(incomingBookAsMap map[string]interface{}
 	_, hasTimeCreated := incomingBookAsMap["timecreated"]
 	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
 
-	if (hasTimeCreated && !hasTimeUpdated) {
+	if hasTimeCreated {
 		return errors.New("Client cannot provide time created.")
 	}
 
-	if (!hasTimeCreated && hasTimeUpdated) {
+	if hasTimeUpdated {
 		return errors.New("Client cannot provide time updated.")
-	}
-
-	if (hasTimeCreated && hasTimeUpdated) {
-		return errors.New("Client cannot provide time created or time updated.")
 	}
 
 	return nil
@@ -44,17 +40,14 @@ func ValidateIDSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) 
 
 	// State is available -- THIS IS SEMANTIC CHECKING
 	if (state == "available") {
-		if ((hasOnHoldCustomerID) && (!hasCheckedOutCustomerID)) {
+		if hasOnHoldCustomerID {
 			return errors.New("Cannot have an on-hold customer ID when state is available.")
 		}
 
-		if (!(hasOnHoldCustomerID) && (hasCheckedOutCustomerID)) {
+		if hasCheckedOutCustomerID {
 			return errors.New("Cannot have checked-out customer ID when state is available.")
 		}
 		
-		if (hasOnHoldCustomerID || hasCheckedOutCustomerID) {
-			return errors.New("Cannot have on-hold customer ID or checked-out customer ID when state is available.")
-		}
 	}
 
 	// State is on-hold -- THIS IS SEMANTIC CHECKING
