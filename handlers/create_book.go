@@ -2,6 +2,7 @@ package handlers
 
 import ( // h.Books, bookByISBN
 	"example/library_project/models"
+	"example/library_project/utils"
 
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -141,12 +142,12 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Update newBook ISBN field
-	newBook.ISBN = ToPtr(incomingISBN)
+	newBook.ISBN = utils.ToPtr(incomingISBN)
 
 	// Update newBook State field (if state is present)
 	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
 		incomingState := incomingState.(string) // Type Assertion
-		newBook.State = ToPtr(incomingState)
+		newBook.State = utils.ToPtr(incomingState)
 	} else {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing State in the incoming request."})
 		return
@@ -155,17 +156,17 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	// Update newBook OnHoldCustomerID
 	if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 		incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
-		newBook.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
+		newBook.OnHoldCustomerID = utils.ToPtr(incomingOnHoldCustomerID)
 	}
 
 	// Update newBook CheckedOutCustomerID
 	if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
 		incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
-		newBook.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
+		newBook.CheckedOutCustomerID = utils.ToPtr(incomingCheckedOutCustomerID)
 	}
 
 	// Update newBook times
-	newBook.TimeCreated = ToPtr(time.Now())
+	newBook.TimeCreated = utils.ToPtr(time.Now())
 	newBook.TimeUpdated = nil
 
 	// Add newBook to h.Books

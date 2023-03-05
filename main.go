@@ -2,9 +2,8 @@ package main
 
 import ( 
 	"example/library_project/handlers"
-
-	// "example/library_project/validators"
 	"example/library_project/models"
+	"example/library_project/utils"
 	
 	// "net/http"
 	"github.com/gin-gonic/gin"
@@ -17,50 +16,44 @@ import (
 	// "strconv"
 )
 
-// Generic function converts literals to pointers
-func ToPtr[T string|time.Time](v T) *T {
-    return &v
-}
-
-
 func main() {
 
 	//// Instantiating Test Data
 
-	// First test of instantiating test data with new schema and ToPtr function
-	var bookInstance00 *models.Book = &models.Book{ISBN: ToPtr("00"), State: ToPtr("on-hold"), OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Now())}
+	// First test of instantiating test data with new schema and utils.ToPtr function
+	var bookInstance00 *models.Book = &models.Book{ISBN: utils.ToPtr("00"), State: utils.ToPtr("on-hold"), OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Now())}
 
 	// Actual test data to be used in testing
-	var bookInstance0 *models.Book = &models.Book{ISBN: ToPtr("0000"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
-	var bookInstance1 *models.Book = &models.Book{ISBN: ToPtr("0001"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
-	var bookInstance2 *models.Book = &models.Book{ISBN: ToPtr("0002"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold
+	var bookInstance0 *models.Book = &models.Book{ISBN: utils.ToPtr("0000"), State: utils.ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Available
+	var bookInstance1 *models.Book = &models.Book{ISBN: utils.ToPtr("0001"), State: utils.ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Checked-out
+	var bookInstance2 *models.Book = &models.Book{ISBN: utils.ToPtr("0002"), State: utils.ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> On-hold
 
-	var bookInstance3 *models.Book = &models.Book{ISBN: ToPtr("0003"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
-	var bookInstance4 *models.Book = &models.Book{ISBN: ToPtr("0004"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
-	var bookInstance5 *models.Book = &models.Book{ISBN: ToPtr("0005"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
-	var bookInstance6 *models.Book = &models.Book{ISBN: ToPtr("0006"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
-	var bookInstance7 *models.Book = &models.Book{ISBN: ToPtr("0007"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
-	var bookInstance8 *models.Book = &models.Book{ISBN: ToPtr("0008"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
+	var bookInstance3 *models.Book = &models.Book{ISBN: utils.ToPtr("0003"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Available
+	var bookInstance4 *models.Book = &models.Book{ISBN: utils.ToPtr("0004"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Available (no match)
+	var bookInstance5 *models.Book = &models.Book{ISBN: utils.ToPtr("0005"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Checked-out
+	var bookInstance6 *models.Book = &models.Book{ISBN: utils.ToPtr("0006"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Checked-out (no match)
+	var bookInstance7 *models.Book = &models.Book{ISBN: utils.ToPtr("0007"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> On-hold 
+	var bookInstance8 *models.Book = &models.Book{ISBN: utils.ToPtr("0008"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> On-hold (no match)
 
-	var bookInstance9 *models.Book =  &models.Book{ISBN: ToPtr("0009"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available
-	var bookInstance10 *models.Book = &models.Book{ISBN: ToPtr("0010"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Available (no match)
-	var bookInstance11 *models.Book = &models.Book{ISBN: ToPtr("0011"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out
-	var bookInstance12 *models.Book = &models.Book{ISBN: ToPtr("0012"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> Checked-out (no match)
-	var bookInstance13 *models.Book = &models.Book{ISBN: ToPtr("0013"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold 
-	var bookInstance14 *models.Book = &models.Book{ISBN: ToPtr("0014"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> On-hold (no match)
+	var bookInstance9 *models.Book =  &models.Book{ISBN: utils.ToPtr("0009"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Available
+	var bookInstance10 *models.Book = &models.Book{ISBN: utils.ToPtr("0010"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Available (no match)
+	var bookInstance11 *models.Book = &models.Book{ISBN: utils.ToPtr("0011"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Checked-out
+	var bookInstance12 *models.Book = &models.Book{ISBN: utils.ToPtr("0012"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> Checked-out (no match)
+	var bookInstance13 *models.Book = &models.Book{ISBN: utils.ToPtr("0013"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> On-hold 
+	var bookInstance14 *models.Book = &models.Book{ISBN: utils.ToPtr("0014"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> On-hold (no match)
 
-	var bookInstance15 *models.Book = &models.Book{ISBN: ToPtr("0015"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} // --> This is the book to be deleted in testing
+	var bookInstance15 *models.Book = &models.Book{ISBN: utils.ToPtr("0015"), State: utils.ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} // --> This is the book to be deleted in testing
 
 	// The following are for UpdateBook ID semantics validation
-	var bookInstance16 *models.Book = &models.Book{ISBN: ToPtr("0016"), State: ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})} 
-	var bookInstance17 *models.Book = &models.Book{ISBN: ToPtr("0017"), State: ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: ToPtr("01"), TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
-	var bookInstance18 *models.Book = &models.Book{ISBN: ToPtr("0018"), State: ToPtr("on-hold"), 	OnHoldCustomerID: ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Now()), TimeUpdated: ToPtr(time.Time{})}
+	var bookInstance16 *models.Book = &models.Book{ISBN: utils.ToPtr("0016"), State: utils.ToPtr("available"), OnHoldCustomerID: nil, CheckedOutCustomerID: nil, 	TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})} 
+	var bookInstance17 *models.Book = &models.Book{ISBN: utils.ToPtr("0017"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})}
+	var bookInstance18 *models.Book = &models.Book{ISBN: utils.ToPtr("0018"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	// The follwing are for UpdateBook Time validation
 	arbitraryTime, _ := time.Parse(time.RFC3339, "2023-02-18T15:45:00Z")
-	var bookInstance19 *models.Book = &models.Book{ISBN: ToPtr("0019"), State: ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(arbitraryTime), TimeUpdated: ToPtr(time.Time{})}
-	var bookInstance20 *models.Book = &models.Book{ISBN: ToPtr("0020"), State: ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Time{}), TimeUpdated: ToPtr(arbitraryTime)}
-	var bookInstance21 *models.Book = &models.Book{ISBN: ToPtr("0021"), State: ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: ToPtr(time.Time{}), TimeUpdated: ToPtr(time.Time{})}
+	var bookInstance19 *models.Book = &models.Book{ISBN: utils.ToPtr("0019"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryTime), TimeUpdated: utils.ToPtr(time.Time{})}
+	var bookInstance20 *models.Book = &models.Book{ISBN: utils.ToPtr("0020"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(arbitraryTime)}
+	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	// Map of test data to be used in testing
 	var mapOfBooks = map[string]*models.Book{

@@ -2,6 +2,7 @@ package handlers
 
 import ( // h.books, h.bookByISBN
 	"example/library_project/models"
+	"example/library_project/utils"
 	
 	"net/http"
 	"github.com/gin-gonic/gin"
@@ -103,13 +104,13 @@ func Checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	if (*currentBook.State == "available") {
 		*currentBook.State = "checked-out" // or should we use incomingBook.State? 
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-		currentBook.TimeUpdated = ToPtr(time.Now())
+		currentBook.TimeUpdated = utils.ToPtr(time.Now())
 	} else if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			*currentBook.State = "checked-out"
 			currentBook.OnHoldCustomerID = nil
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-			currentBook.TimeUpdated = ToPtr(time.Now())
+			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
 			return nil, NoMatchError
 		}
@@ -143,7 +144,7 @@ func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 	if (*currentBook.State == "available") {
 		*currentBook.State = "on-hold"
 		currentBook.OnHoldCustomerID = incomingBook.OnHoldCustomerID
-		currentBook.TimeUpdated = ToPtr(time.Now())
+		currentBook.TimeUpdated = utils.ToPtr(time.Now())
 	} else if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
@@ -168,7 +169,7 @@ func ReleaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) {
 			*currentBook.State = "available"
 			currentBook.OnHoldCustomerID = nil
-			currentBook.TimeUpdated = ToPtr(time.Now())
+			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
 			return nil, NoMatchError
 		}
@@ -190,7 +191,7 @@ func Return(currentBook *models.Book, incomingBook *models.Book) (*models.Book, 
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) {
 			*currentBook.State = "available"
 			currentBook.CheckedOutCustomerID = nil
-			currentBook.TimeUpdated = ToPtr(time.Now())
+			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
 			return nil, NoMatchError
 		}
@@ -268,7 +269,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		// THE REASON WE HAVE A PROBLEM HERE IS THAT WE HAVE A LOCAL VARIABLE ALSO CALLED BOOK....
 		var incomingRequest *models.Book = &models.Book{
 			ISBN: &incomingISBN, 
-			State: ToPtr(incomingState), 
+			State: utils.ToPtr(incomingState), 
 			OnHoldCustomerID: nil, 
 			CheckedOutCustomerID: nil, 
 			TimeCreated: nil, 
@@ -277,12 +278,12 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 
 		if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
 			incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
-			incomingRequest.OnHoldCustomerID = ToPtr(incomingOnHoldCustomerID)
+			incomingRequest.OnHoldCustomerID = utils.ToPtr(incomingOnHoldCustomerID)
 		}
 
 		if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
 			incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
-			incomingRequest.CheckedOutCustomerID = ToPtr(incomingCheckedOutCustomerID)
+			incomingRequest.CheckedOutCustomerID = utils.ToPtr(incomingCheckedOutCustomerID)
 		}
 
 		currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingRequest)

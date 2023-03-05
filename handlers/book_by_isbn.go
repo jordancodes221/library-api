@@ -2,14 +2,7 @@ package handlers
 
 import ( // h.Books
 	"example/library_project/models"
-	
-	"time"
 )
-
-// Generic function converts literals to pointers
-func ToPtr[T string|time.Time](v T) *T {
-    return &v
-}
 
 // Helper function
 func (h *BooksHandler) bookByISBN(isbn string) (*models.Book, error) {
