@@ -96,7 +96,7 @@ func main() {
 	}
 
 	router := gin.Default()
-	h := handlers.BooksHandler{Books: mapOfBooks}
+	h := &handlers.BooksHandler{Books: mapOfBooks}
 	router.GET("/books", h.GetAllBooks)
 	router.GET("/books/:isbn", h.GetIndividualBook)
 	router.POST("/books", h.CreateBook)
