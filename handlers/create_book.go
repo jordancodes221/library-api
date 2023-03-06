@@ -12,8 +12,8 @@ import ( // h.Books, bookByISBN
 )
 
 // Semantic validation
-func ValidateSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
-	// fmt.Println("CALLING ValidateSemanticsForCreateBook...")
+func validateSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
+	// fmt.Println("CALLING validateSemanticsForCreateBook...")
 
 	////////// ID semantics
 
@@ -128,7 +128,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Validate semantics
-	if err := ValidateSemanticsForCreateBook(incomingBookAsMap); err != nil {
+	if err := validateSemanticsForCreateBook(incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}

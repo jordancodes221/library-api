@@ -13,7 +13,7 @@ import ( // h.books, h.bookByISBN
 )
 
 // Validate Time Semantics
-func ValidateTimeSemanticsForUpdateBook(currentBook *models.Book, incomingBookAsMap map[string]interface{}) (error) {
+func validateTimeSemanticsForUpdateBook(currentBook *models.Book, incomingBookAsMap map[string]interface{}) (error) {
 	fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
 
 	currentTimeCreated := *currentBook.TimeCreated
@@ -50,12 +50,12 @@ func ValidateTimeSemanticsForUpdateBook(currentBook *models.Book, incomingBookAs
 }
 
 
-// Semantic Validation for Checkout and Return
-func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error) {
+// Semantic Validation for checkout and returnBook
+func validateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error) {
 	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
 	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
 	
-	// fmt.Println("CALLING ValidateIDSemanticsForCheckedOutUpdate...")
+	// fmt.Println("CALLING validateIDSemanticsForCheckedOutUpdate...")
 	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
 	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
@@ -70,14 +70,14 @@ func ValidateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error
 	return nil
 }
 
-// Semantic Validation for PlaceHold and ReleaseHold
-func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
+// Semantic Validation for placeHold and releaseHold
+func validateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
 	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
 	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
 	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
 	onHoldCustomerID := incomingRequest.OnHoldCustomerID
 
-	// fmt.Println("CALLING ValidateIDSemanticsForOnHoldUpdate...")
+	// fmt.Println("CALLING validateIDSemanticsForOnHoldUpdate...")
 	if (onHoldCustomerID == nil) {
 		return errors.New("Expected on-hold customer ID.")
 	}
@@ -90,14 +90,14 @@ func ValidateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
 }
 
 // No Match Error
-var NoMatchError error = errors.New("ID's do not match.")
+var noMatchError error = errors.New("ID's do not match.")
 
-// Checkout
+// checkout
 	// available --> checked-out
 	// on-hold --> checked-out
 	// checked-out --> checked-out
-func Checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := validateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -112,13 +112,13 @@ func Checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, NoMatchError
+			return nil, noMatchError
 		}
 	} else if (*currentBook.State == "checked-out") {
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
 			// pass
 		} else {
-			return nil, NoMatchError
+			return nil, noMatchError
 		}
 	} else {
 		// pass
@@ -127,17 +127,17 @@ func Checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	return currentBook, nil
 }
 
-// Conflict
+// conflict
 	// checked-out --> on-hold
-func Conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	return nil, errors.New("Invalid state transfer requested.")
 }
 
-// PlaceHold
+// placeHold
 	// available --> on-hold
 	// on-hold --> on-hold
-func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := validateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -149,7 +149,7 @@ func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
 		} else {
-			return nil, NoMatchError
+			return nil, noMatchError
 		}
 	} else {
 		// pass 
@@ -158,10 +158,10 @@ func PlaceHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 	return currentBook, nil
 }
 
-// ReleaseHold
+// releaseHold
 	// on-hold --> available
-func ReleaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := validateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -171,19 +171,19 @@ func ReleaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 			currentBook.OnHoldCustomerID = nil
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, NoMatchError
+			return nil, noMatchError
 		}
 	}
 
 	return currentBook, nil
 }
 
-// Return
+// returnBook
 	// checked-out --> available
-func Return(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	fmt.Println("CALLING RETURNBOOK...")
 
-	if err := ValidateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+	if err := validateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
 		return nil, err
 	}
 
@@ -193,34 +193,34 @@ func Return(currentBook *models.Book, incomingBook *models.Book) (*models.Book, 
 			currentBook.CheckedOutCustomerID = nil
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, NoMatchError
+			return nil, noMatchError
 		}
 	}
 
 	return currentBook, nil
 }
 
-// NoOperation
+// noOperation
 	// available --> available
 	// on-hold --> on-hold (when ID's match)
-func NoOperation(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func noOperation(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	return currentBook, nil
 }
 
 // First key is current state, 2nd key is incoming state
 var actionTable = map[string]map[string]func(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	"available": {
-		"available": NoOperation,
-		"checked-out": Checkout,
-		"on-hold": PlaceHold,
+		"available": noOperation,
+		"checked-out": checkout,
+		"on-hold": placeHold,
 	}, "checked-out": {
-			"available": Return,
-			"checked-out": Checkout,
-			"on-hold": Conflict,
+			"available": returnBook,
+			"checked-out": checkout,
+			"on-hold": conflict,
 	}, "on-hold": {
-			"available": ReleaseHold,
-			"checked-out": Checkout,
-			"on-hold": PlaceHold,
+			"available": releaseHold,
+			"checked-out": checkout,
+			"on-hold": placeHold,
 	},
 }
 
@@ -253,7 +253,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}
 
 	// Validate Time Semantics
-	if err := ValidateTimeSemanticsForUpdateBook(currentBook, incomingBookAsMap); err != nil {
+	if err := validateTimeSemanticsForUpdateBook(currentBook, incomingBookAsMap); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
