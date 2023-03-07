@@ -239,28 +239,20 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		return
 	}	
 
-	// Decoding JSON to map
-	incomingBookAsMap := map[string]interface{}{}
-	dec := json.NewDecoder(c.Request.Body)
-	if err := dec.Decode(&incomingBookAsMap); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-		return
-	}
-
 ///////////////////////////////////
 /////// FIRST MAJOR CHANGE ////////
 ///////////////////////////////////
 
-	// // Decode JSON to book struct
+	// Decode JSON to book struct
 			// Notice this block is the same as the previous block with decoding to a map, except the first line
 			// Previously, the first line allocated memory for a map[string]interface{}{}, but here we allocae memory for a models.Book struct
 			// Also, in the 3rd line we pass book (rather than a pointer to the map)... note that the book variable is a pointer (see commment on that line)
-	// book := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it
-	// dec := json.NewDecoder(c.Request.Body)
-	// if err := dec.Decode(book); err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-	// 	return
-	// }
+	incomingBookAsStruct := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it
+	dec := json.NewDecoder(c.Request.Body)
+	if err := dec.Decode(incomingBookAsStruct); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
 
 //////////////////////////////////////////
 /////// End of FIRST MAJOR CHANGE ////////
@@ -268,7 +260,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 
 
 	// Validate ISBN and State Syntax
-	if err := models.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
+	if err := incomingBookAsStruct.Validate(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -277,12 +269,12 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 /////// SECOND MAJOR CHANGE ///////
 ///////////////////////////////////
 
-	// // In the "FIRST MAJOR CHANGE", we decoded the JSON into a models.Book struct known as "book".
-		// // Recall that the book struct has a pointer-reciver function called Validate. So, we call that function and handle any errors that occur.
-	// if err := book.Validate(); err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-	// 	return
-	// }
+	// In the "FIRST MAJOR CHANGE", we decoded the JSON into a models.Book struct known as "book".
+		// Recall that the book struct has a pointer-reciver function called Validate. So, we call that function and handle any errors that occur.
+	if err := book.Validate(); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
 
 //////////////////////////////////////////
 /////// End of SECOND MAJOR CHANGE ///////

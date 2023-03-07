@@ -80,6 +80,11 @@ func (b *Book) Validate() (error) {
 }
 
 func (b *Book) FurtherValidationForCreateBook() (error) {
+	// Ensure ISBN is provided
+	if b.ISBN == nil {
+		return errors.New("Missing ISBN in the incoming request.")
+	}
+	
 	// Ensure state is provided
 	if b.State == nil {
 		return errors.New("Missing State in the incoming request.")

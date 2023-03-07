@@ -21,12 +21,6 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 		return
 	}
 
-	// Ensure that incoming JSON includes ISBN
-	if newBook.ISBN == nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing ISBN in the incoming request."})
-		return
-	}
-
 	// If fields are not nil, ensure they are within range
 	if err := newBook.Validate(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
