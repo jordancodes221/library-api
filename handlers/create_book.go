@@ -8,205 +8,49 @@ import ( // h.Books, bookByISBN
 	"github.com/gin-gonic/gin"
 	"time"
 	"encoding/json"
-	"errors"
+	// "errors"
 )
 
-// Semantic validation
-func validateSemanticsForCreateBook(incomingBookAsMap map[string]interface{}) (error) {
-	// fmt.Println("CALLING validateSemanticsForCreateBook...")
-
-	////////// ID semantics
-
-	// This function will only be called once state is established to be both present and valid
-	state := incomingBookAsMap["state"]
-	
-	// Retrieve the customer ID's if they are present
-	_, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]
-	_, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]
-
-	// State is available -- THIS IS SEMANTIC CHECKING
-	if (state == "available") {
-		if hasOnHoldCustomerID {
-			return errors.New("Cannot have an on-hold customer ID when state is available.")
-		}
-
-		if hasCheckedOutCustomerID {
-			return errors.New("Cannot have checked-out customer ID when state is available.")
-		}
-		
-	}
-
-	// State is on-hold -- THIS IS SEMANTIC CHECKING
-	if (state == "on-hold") {
-		if hasCheckedOutCustomerID {
-			return errors.New("Cannot have checked-out customer ID when state is on-hold.")
-		}
-
-		if hasOnHoldCustomerID {
-			// We know ohid is provided. Ensure it is a string
-			ohid, ohidIsString := incomingBookAsMap["onholdcustomerid"].(string)
-			if !ohidIsString {
-				return errors.New("On-hold customer ID provided is not of type string.")
-			}
-
-			if (ohid == "") {
-				return errors.New("On-hold customer ID is the empty string.")
-			}
-		} else { // !hasOnHoldCustomerID
-			return errors.New("State provided is on-hold, but no on-hold customer ID is provided.")
-		}
-	}
-
-	// State is checked-out -- THIS IS SEMANTIC CHECKING
-	if (state == "checked-out") {
-		if hasOnHoldCustomerID {
-			return errors.New("Cannot have on-hold customer ID when state is checked-out.")
-		}
-
-		if hasCheckedOutCustomerID {
-			// We know ohid is provided. Ensure it is a string
-			coid, coidIsString := incomingBookAsMap["checkedoutcustomerid"].(string)
-			if !coidIsString {
-				return errors.New("Checked-out customer ID provided is not of type string.")
-			}
-
-			if (coid == "") {
-				return errors.New("Checked-out customer ID is the empty string.")
-			}
-		} else { // !hasCheckedOutCustomerID
-			return errors.New("State provided is checked-out, but no checked-out customer ID is provided.")
-		}
-	}
-
-	////////// Time Semantics
-	_, hasTimeCreated := incomingBookAsMap["timecreated"]
-	_, hasTimeUpdated := incomingBookAsMap["timeupdated"]
-
-	if hasTimeCreated {
-		return errors.New("Client cannot provide time created when creating a new book.")
-	}
-
-	if hasTimeUpdated {
-		return errors.New("Client cannot provide time updated when creating a new book.")
-	}
-
-	return nil
-}
-
 // POST
-func (h *BooksHandler) CreateBook(c *gin.Context) { 
-	var newBook *models.Book = &models.Book{
-		ISBN: nil, 
-		State: nil, 
-		OnHoldCustomerID: nil, 
-		CheckedOutCustomerID: nil, 
-		TimeCreated: nil, 
-		TimeUpdated: nil,}
-
-	// Decoding JSON to map
-	incomingBookAsMap := map[string]interface{}{}
+func (h *BooksHandler) CreateBook(c *gin.Context) {
+	// Decode JSON to book struct
+	newBook := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it
 	dec := json.NewDecoder(c.Request.Body)
-	if err := dec.Decode(&incomingBookAsMap); err != nil {
+	if err := dec.Decode(newBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
-///////////////////////////////////
-/////// FIRST MAJOR CHANGE ////////
-///////////////////////////////////
-
-	// // Decode JSON to book struct
-			// Notice this block is the same as the previous block with decoding to a map, except the first line
-			// Previously, the first line allocated memory for a map[string]interface{}{}, but here we allocae memory for a models.Book struct
-			// Also, in the 3rd line we pass book (rather than a pointer to the map)... note that the book variable is a pointer (see commment on that line)
-	// book := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it
-	// dec := json.NewDecoder(c.Request.Body)
-	// if err := dec.Decode(book); err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-	// 	return
-	// }
-
-//////////////////////////////////////////
-/////// End of FIRST MAJOR CHANGE ////////
-//////////////////////////////////////////
-
-
 	// Ensure that incoming JSON includes ISBN
-	if _, hasISBN := incomingBookAsMap["isbn"]; !hasISBN {
+	if newBook.ISBN == nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing ISBN in the incoming request."})
 		return
 	}
 
-	// The reason for calling validate at this point is that it is:
-		// (1) After checking that ISBN is present, and
-		// (2) Before checking if ISBN is in-use (we want to ensure it's valid before checking if it's in-use)
-
-	// Validate ISBN and State Syntax
-	if err := models.ValidateISBNAndStateSyntax(incomingBookAsMap); err != nil {
+	// If fields are not nil, ensure they are within range
+	if err := newBook.Validate(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
-///////////////////////////////////
-/////// SECOND MAJOR CHANGE ///////
-///////////////////////////////////
-
-	// // In the "FIRST MAJOR CHANGE", we decoded the JSON into a models.Book struct known as "book".
-		// // Recall that the book struct has a pointer-reciver function called Validate. So, we call that function and handle any errors that occur.
-	// if err := book.Validate(); err != nil {
-	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-	// 	return
-	// }
-
-//////////////////////////////////////////
-/////// End of SECOND MAJOR CHANGE ///////
-//////////////////////////////////////////
-	
-
-	// Validate semantics
-	if err := validateSemanticsForCreateBook(incomingBookAsMap); err != nil {
+	// Logic validation
+	if err := newBook.FurtherValidationForCreateBook(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
 	// Make sure ISBN is not already in-use
-		// At this point, we know that ISBN (1) is present, and (2) is valid
-	incomingISBN := incomingBookAsMap["isbn"].(string)
-	if _, ok := h.Books[incomingISBN]; ok {
+	ptrIncomingISBN := newBook.ISBN
+	if _, ok := h.Books[*ptrIncomingISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
 
-	// Update newBook ISBN field
-	newBook.ISBN = utils.ToPtr(incomingISBN)
-
-	// Update newBook State field (if state is present)
-	if incomingState, hasState := incomingBookAsMap["state"]; hasState {
-		incomingState := incomingState.(string) // Type Assertion
-		newBook.State = utils.ToPtr(incomingState)
-	} else {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": "Missing State in the incoming request."})
-		return
-	}
-
-	// Update newBook OnHoldCustomerID
-	if incomingOnHoldCustomerID, hasOnHoldCustomerID := incomingBookAsMap["onholdcustomerid"]; hasOnHoldCustomerID {
-		incomingOnHoldCustomerID := incomingOnHoldCustomerID.(string) // Type assertion
-		newBook.OnHoldCustomerID = utils.ToPtr(incomingOnHoldCustomerID)
-	}
-
-	// Update newBook CheckedOutCustomerID
-	if incomingCheckedOutCustomerID, hasCheckedOutCustomerID := incomingBookAsMap["checkedoutcustomerid"]; hasCheckedOutCustomerID {
-		incomingCheckedOutCustomerID := incomingCheckedOutCustomerID.(string) // Type assertion
-		newBook.CheckedOutCustomerID = utils.ToPtr(incomingCheckedOutCustomerID)
-	}
-
-	// Update newBook times
+	// Update TimeCreated to now
 	newBook.TimeCreated = utils.ToPtr(time.Now())
-	newBook.TimeUpdated = nil
 
-	// Add newBook to h.Books
-	h.Books[*newBook.ISBN] = newBook
+	// Add the new book to our library
+	h.Books[*ptrIncomingISBN] = newBook
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }
