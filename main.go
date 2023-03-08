@@ -50,10 +50,15 @@ func main() {
 	var bookInstance18 *models.Book = &models.Book{ISBN: utils.ToPtr("0018"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	// The follwing are for UpdateBook Time validation
-	arbitraryTime, _ := time.Parse(time.RFC3339, "2023-02-18T15:45:00Z")
-	var bookInstance19 *models.Book = &models.Book{ISBN: utils.ToPtr("0019"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryTime), TimeUpdated: utils.ToPtr(time.Time{})}
-	var bookInstance20 *models.Book = &models.Book{ISBN: utils.ToPtr("0020"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(arbitraryTime)}
-	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
+	arbitraryIncomingTimeCreated, _ := time.Parse(time.RFC3339, "2023-03-18T15:45:00Z")
+	arbitraryIncomingTimeUpdated, _ := time.Parse(time.RFC3339, "2022-02-18T15:45:00Z")
+	// Notes:
+		// (1) The body of the requests in Postman all send the above time created and updated.
+		// (2) The test data below has been instantiated with select time field set to zero (via time.Time{}) to intentionally create a mismatch for our testing.
+	var bookInstance19 *models.Book = &models.Book{ISBN: utils.ToPtr("0019"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(arbitraryIncomingTimeUpdated)}
+	var bookInstance20 *models.Book = &models.Book{ISBN: utils.ToPtr("0020"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryIncomingTimeCreated), TimeUpdated: utils.ToPtr(time.Time{})}
+	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryIncomingTimeCreated), TimeUpdated: utils.ToPtr(arbitraryIncomingTimeUpdated)}
+	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	// Map of test data to be used in testing
 	var mapOfBooks = map[string]*models.Book{
@@ -85,7 +90,8 @@ func main() {
 
 		"0019" : bookInstance19,
 		"0020" : bookInstance20,
-		"0021" : bookInstance21,				
+		"0021" : bookInstance21,	
+		"0022" : bookInstance22,		
 	}
 
 	router := gin.Default()

@@ -13,39 +13,41 @@ import ( // h.books, h.bookByISBN
 )
 
 // Validate Time Semantics
-func validateTimeSemanticsForUpdateBook(currentBook *models.Book, incomingBookAsMap map[string]interface{}) (error) {
-	fmt.Println("CALLING VALIDATE TIME SEMANTICS...")
+func validateTimeSemanticsForUpdateBook(currentBook *models.Book, incomingBookAsStruct *models.Book) (error) {
+	// Validate Time Created
+	ptrIncomingTimeCreated := incomingBookAsStruct.TimeCreated
+	if ptrIncomingTimeCreated != nil {
+		// Since ptrIncomingTimeCreated is not nil, we can de-reference it
+		incomingTimeCreated := *ptrIncomingTimeCreated
 
-	currentTimeCreated := *currentBook.TimeCreated
-	if incomingTimeCreatedUnparsed, ok := incomingBookAsMap["timecreated"]; ok {
-		incomingTimeCreatedUnparsed := incomingTimeCreatedUnparsed.(string)
-		incomingTimeCreated, _ := time.Parse(time.RFC3339, incomingTimeCreatedUnparsed)
+		ptrCurrentTimeCreated := currentBook.TimeCreated
+		currentTimeCreated := *ptrCurrentTimeCreated // should not need to check that ptrCurrentTimeCreated != nil, because all books have a Time Created and this field cannot be changed by the client
 		
-		fmt.Print("CURRENT TIME CREATED: ")
-		fmt.Println(currentTimeCreated)
-		fmt.Print("REQUESTED TIME CREATED: ")
-		fmt.Println(incomingTimeCreated)
-
-		if currentTimeCreated != incomingTimeCreated {
+		if incomingTimeCreated != currentTimeCreated {
 			return errors.New("Requested time created does not match existing time created.")
 		}
 	}
 
-	currentTimeUpdated := *currentBook.TimeUpdated
-	if incomingTimeUpdatedUnparsed, ok := incomingBookAsMap["timeupdated"]; ok {
-		incomingTimeUpdatedUnparsed := incomingTimeUpdatedUnparsed.(string)
-		incomingTimeUpdated, _ := time.Parse(time.RFC3339, incomingTimeUpdatedUnparsed)
-		
-		fmt.Print("CURRENT TIME UPDATED: ")
-		fmt.Println(currentTimeUpdated)
-		fmt.Print("REQUESTED TIME UPDATED: ")
-		fmt.Println(incomingTimeUpdated)
-		
-		if currentTimeUpdated != incomingTimeUpdated {
-			return errors.New("Requested time updated does not match existing time updated.")
+	// Validate Time Updated
+	ptrIncomingTimeUpdated := incomingBookAsStruct.TimeUpdated
+	if ptrIncomingTimeUpdated != nil {
+		incomingTimeUpdated := *ptrIncomingTimeUpdated // since ptrIncomingTimeUpdated is not nil, we can de-reference it
+		// perhaps de-referencing ptrIncomingTimeUpdated could be moved to the else-block below
+		// However, I am keeping it here so it can be de-refenced on the line after checking it is not nil
+
+		// Now, we check whether the current book has a time updated provided or not
+		ptrCurrentTimeUpdated := currentBook.TimeUpdated // keep in mind this could be nil
+		if ptrCurrentTimeUpdated == nil {
+			return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+		} else { // ptrCurrentTimeUpdated != nil
+			currentTimeUpdated := *ptrCurrentTimeUpdated // in this case, ptrCurrentTimeUpdated is not nil so we can de-reference it
+			if incomingTimeUpdated != currentTimeUpdated {
+				return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+			}
 		}
+		
 	}
-	
+
 	return nil
 }
 
@@ -239,10 +241,6 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		return
 	}	
 
-///////////////////////////////////
-/////// MAJOR CHANGES BEGIN ///////
-///////////////////////////////////
-
 	// Decode JSON to book struct
 			// Notice this block is the same as the previous block with decoding to a map, except the first line
 			// Previously, the first line allocated memory for a map[string]interface{}{}, but here we allocae memory for a models.Book struct
@@ -262,6 +260,12 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 
 	// General validation for logic (additional validation needed depending on specific action table helper function called later)
 	if err := incomingBookAsStruct.GeneralValidationForUpdateBook(); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		return
+	}
+
+	// Validate Time Semantics
+	if err := validateTimeSemanticsForUpdateBook(currentBook, incomingBookAsStruct); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
