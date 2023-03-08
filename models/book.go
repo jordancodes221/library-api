@@ -138,3 +138,23 @@ func (b *Book) FurtherValidationForCreateBook() (error) {
 
 	return nil
 }
+
+///// We can call a general semantics check to ensure ISBN and State are not nil, as well as Time
+///// Then call a more specific semantic checker for ID semantics
+///// I know this goes against the idea of "a single semantic checker for each handler", but we already basically do 2 semantic checks currently by checking "ptrIncomingState != nil" within updatebook so why not encapsulate it??
+func (b *Book) GeneralValidationForUpdateBook() (error) {
+	// Ensure ISBN is provided
+	if b.ISBN == nil {
+		return errors.New("Missing ISBN in the incoming request.")
+	}
+	
+	// Ensure state is provided
+	if b.State == nil {
+		return errors.New("Missing State in the incoming request.")
+	}
+
+	// Time semantics - REVISIT
+
+
+	return nil
+}
