@@ -152,3 +152,46 @@ func (b *Book) GeneralValidationForUpdateBook() (error) {
 
 	return nil
 }
+
+//////////////////////////////// 
+////////// UPDATE BOOK /////////
+//////////////////////////////// 
+
+// Validate Time Semantics
+func (incomingBookAsStruct *Book) ValidateTimeSemanticsForUpdateBook(currentBook *Book) (error) {
+	// Validate Time Created
+	ptrIncomingTimeCreated := incomingBookAsStruct.TimeCreated
+	if ptrIncomingTimeCreated != nil {
+		// Since ptrIncomingTimeCreated is not nil, we can de-reference it
+		incomingTimeCreated := *ptrIncomingTimeCreated
+
+		ptrCurrentTimeCreated := currentBook.TimeCreated
+		currentTimeCreated := *ptrCurrentTimeCreated // should not need to check that ptrCurrentTimeCreated != nil, because all books have a Time Created and this field cannot be changed by the client
+		
+		if incomingTimeCreated != currentTimeCreated {
+			return errors.New("Requested time created does not match existing time created.")
+		}
+	}
+
+	// Validate Time Updated
+	ptrIncomingTimeUpdated := incomingBookAsStruct.TimeUpdated
+	if ptrIncomingTimeUpdated != nil {
+		incomingTimeUpdated := *ptrIncomingTimeUpdated // since ptrIncomingTimeUpdated is not nil, we can de-reference it
+		// perhaps de-referencing ptrIncomingTimeUpdated could be moved to the else-block below
+		// However, I am keeping it here so it can be de-refenced on the line after checking it is not nil
+
+		// Now, we check whether the current book has a time updated provided or not
+		ptrCurrentTimeUpdated := currentBook.TimeUpdated // keep in mind this could be nil
+		if ptrCurrentTimeUpdated == nil {
+			return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+		} else { // ptrCurrentTimeUpdated != nil
+			currentTimeUpdated := *ptrCurrentTimeUpdated // in this case, ptrCurrentTimeUpdated is not nil so we can de-reference it
+			if incomingTimeUpdated != currentTimeUpdated {
+				return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+			}
+		}
+		
+	}
+
+	return nil
+}
