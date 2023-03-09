@@ -11,28 +11,10 @@ import ( // h.books, h.bookByISBN
 	"encoding/json"
 )
 
-// Previously, the function here was: validateTimeSemanticsForUpdateBook
-
-// Previously, the function here was: validateIDSemanticsForCheckedOutUpdate
-
-// Semantic Validation for placeHold and releaseHold
-func validateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
-	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
-	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
-	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
-	onHoldCustomerID := incomingRequest.OnHoldCustomerID
-
-	// fmt.Println("CALLING validateIDSemanticsForOnHoldUpdate...")
-	if (onHoldCustomerID == nil) {
-		return errors.New("Expected on-hold customer ID.")
-	}
-
-	if (checkedOutCustomerID != nil) {
-		return errors.New("Did not expect checked-out customer ID.")
-	}
-
-	return nil
-}
+// Previously, the validation functions here were: 
+	// validateTimeSemanticsForUpdateBook
+	// validateIDSemanticsForCheckedOutUpdate
+	// validateIDSemanticsForOnHoldUpdate
 
 // No Match Error
 var noMatchError error = errors.New("ID's do not match.")
@@ -82,7 +64,7 @@ func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	// available --> on-hold
 	// on-hold --> on-hold
 func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := validateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+	if err := incomingBook.ValidateIDSemanticsForOnHoldUpdate(); err != nil {
 		return nil, err
 	}
 
@@ -106,7 +88,7 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 // releaseHold
 	// on-hold --> available
 func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := validateIDSemanticsForOnHoldUpdate(incomingBook); err != nil {
+	if err := incomingBook.ValidateIDSemanticsForOnHoldUpdate(); err != nil {
 		return nil, err
 	}
 

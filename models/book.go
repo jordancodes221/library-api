@@ -215,3 +215,22 @@ func (incomingRequest *Book) ValidateIDSemanticsForCheckedOutUpdate() (error) {
 
 	return nil
 }
+
+// Semantic Validation for placeHold and releaseHold
+func (incomingRequest *Book) ValidateIDSemanticsForOnHoldUpdate() (error) {
+	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
+	// For this particular case, it should be populated as such: &{isbn, state, nil, onholdcustomerid, nil, nil}
+	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
+	onHoldCustomerID := incomingRequest.OnHoldCustomerID
+
+	// fmt.Println("CALLING validateIDSemanticsForOnHoldUpdate...")
+	if (onHoldCustomerID == nil) {
+		return errors.New("Expected on-hold customer ID.")
+	}
+
+	if (checkedOutCustomerID != nil) {
+		return errors.New("Did not expect checked-out customer ID.")
+	}
+
+	return nil
+}
