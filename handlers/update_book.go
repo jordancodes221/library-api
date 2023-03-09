@@ -11,11 +11,6 @@ import ( // h.books, h.bookByISBN
 	"encoding/json"
 )
 
-// Previously, the validation functions here were: 
-	// validateTimeSemanticsForUpdateBook
-	// validateIDSemanticsForCheckedOutUpdate
-	// validateIDSemanticsForOnHoldUpdate
-
 // No Match Error
 var noMatchError error = errors.New("ID's do not match.")
 
@@ -29,7 +24,7 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	}
 
 	if (*currentBook.State == "available") {
-		*currentBook.State = "checked-out" // or should we use incomingBook.State? 
+		*currentBook.State = "checked-out"
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
 		currentBook.TimeUpdated = utils.ToPtr(time.Now())
 	} else if (*currentBook.State == "on-hold") {
@@ -165,43 +160,38 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}	
 
 	// Decode JSON to book struct
-			// Notice this block is the same as the previous block with decoding to a map, except the first line
-			// Previously, the first line allocated memory for a map[string]interface{}{}, but here we allocae memory for a models.Book struct
-			// Also, in the 3rd line we pass book (rather than a pointer to the map)... note that the book variable is a pointer (see commment on that line)
-	incomingBookAsStruct := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it
+	incomingBook := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it
 	dec := json.NewDecoder(c.Request.Body)
-	if err := dec.Decode(incomingBookAsStruct); err != nil {
+	if err := dec.Decode(incomingBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
 	// If fields are not nil, ensure they are within range
-	if err := incomingBookAsStruct.Validate(); err != nil {
+	if err := incomingBook.Validate(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
 	// General validation for logic (additional validation needed depending on specific action table helper function called later)
-	if err := incomingBookAsStruct.GeneralValidationForUpdateBook(); err != nil {
+	if err := incomingBook.GeneralValidationForUpdateBook(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
 	// Validate Time Semantics
-	if err := incomingBookAsStruct.ValidateTimeSemanticsForUpdateBook(currentBook); err != nil {
+	if err := incomingBook.ValidateTimeSemanticsForUpdateBook(currentBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
 
-	//// NOW WE GET OUR CURRENT AND INCOMING STATES, SO WE CAN PASS THEM INTO THE ACTION TABLE
-
-	// this remains unchanged, as it is the current book (not the incoming book)
+	// Now we will pass the current state and incoming state to the action table
 	currentState := currentBook.State // this is a pointer
 
-	ptrIncomingState := incomingBookAsStruct.State 
+	ptrIncomingState := incomingBook.State 
 	incomingState := *ptrIncomingState // due to GeneralValidationForUpdateBook, we know ptrIncomingState is not nil
 
-	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBookAsStruct) // now the action table needs to be re-written to 2nd parameter is struct instead of map
+	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook) // now the action table needs to be re-written to 2nd parameter is struct instead of map
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
