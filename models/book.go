@@ -195,3 +195,23 @@ func (incomingBookAsStruct *Book) ValidateTimeSemanticsForUpdateBook(currentBook
 
 	return nil
 }
+
+// Semantic Validation for checkout and returnBook
+func (incomingRequest *Book) ValidateIDSemanticsForCheckedOutUpdate() (error) {
+	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
+	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
+	
+	// fmt.Println("CALLING validateIDSemanticsForCheckedOutUpdate...")
+	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
+	onHoldCustomerID := incomingRequest.OnHoldCustomerID
+
+	if (checkedOutCustomerID == nil) {
+		return errors.New("Expected checked-out customer ID.")
+	}
+
+	if (onHoldCustomerID != nil) {
+		return errors.New("Did not expect on-hold customer ID.")
+	}
+
+	return nil
+}

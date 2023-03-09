@@ -9,32 +9,11 @@ import ( // h.books, h.bookByISBN
 	"errors"
 	"time"
 	"encoding/json"
-	"fmt"
 )
 
 // Previously, the function here was: validateTimeSemanticsForUpdateBook
 
-
-
-// Semantic Validation for checkout and returnBook
-func validateIDSemanticsForCheckedOutUpdate(incomingRequest *models.Book) (error) {
-	// incomingRequest is of the form &{isbn, state, checkedoutcustomerid, onholdcustomerid, timecreated, timeupdated}
-	// For this particular case, it should be populated as such: &{isbn, state, checkedoutcustomerid, nil, nil, nil}
-	
-	// fmt.Println("CALLING validateIDSemanticsForCheckedOutUpdate...")
-	checkedOutCustomerID := incomingRequest.CheckedOutCustomerID
-	onHoldCustomerID := incomingRequest.OnHoldCustomerID
-
-	if (checkedOutCustomerID == nil) {
-		return errors.New("Expected checked-out customer ID.")
-	}
-
-	if (onHoldCustomerID != nil) {
-		return errors.New("Did not expect on-hold customer ID.")
-	}
-
-	return nil
-}
+// Previously, the function here was: validateIDSemanticsForCheckedOutUpdate
 
 // Semantic Validation for placeHold and releaseHold
 func validateIDSemanticsForOnHoldUpdate(incomingRequest *models.Book) (error) {
@@ -63,7 +42,7 @@ var noMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := validateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+	if err := incomingBook.ValidateIDSemanticsForCheckedOutUpdate(); err != nil {
 		return nil, err
 	}
 
@@ -147,9 +126,7 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 // returnBook
 	// checked-out --> available
 func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	fmt.Println("CALLING RETURNBOOK...")
-
-	if err := validateIDSemanticsForCheckedOutUpdate(incomingBook); err != nil {
+	if err := incomingBook.ValidateIDSemanticsForCheckedOutUpdate(); err != nil {
 		return nil, err
 	}
 
