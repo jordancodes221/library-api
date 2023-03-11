@@ -19,9 +19,9 @@ var noMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDSemanticsForCheckedOutUpdate(); err != nil {
-		return nil, err
-	}
+	// if err := incomingBook.ValidateIDSemanticsForCheckedOutUpdate(); err != nil {
+	// 	return nil, err
+	// }
 
 	if (*currentBook.State == "available") {
 		*currentBook.State = "checked-out"
@@ -59,9 +59,9 @@ func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	// available --> on-hold
 	// on-hold --> on-hold
 func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDSemanticsForOnHoldUpdate(); err != nil {
-		return nil, err
-	}
+	// if err := incomingBook.ValidateIDSemanticsForOnHoldUpdate(); err != nil {
+	// 	return nil, err
+	// }
 
 	if (*currentBook.State == "available") {
 		*currentBook.State = "on-hold"
@@ -83,9 +83,9 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 // releaseHold
 	// on-hold --> available
 func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDSemanticsForOnHoldUpdate(); err != nil {
-		return nil, err
-	}
+	// if err := incomingBook.ValidateIDSemanticsForOnHoldUpdate(); err != nil {
+	// 	return nil, err
+	// }
 
 	if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) {
@@ -103,9 +103,9 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 // returnBook
 	// checked-out --> available
 func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDSemanticsForCheckedOutUpdate(); err != nil {
-		return nil, err
-	}
+	// if err := incomingBook.ValidateIDSemanticsForCheckedOutUpdate(); err != nil {
+	// 	return nil, err
+	// }
 
 	if (*currentBook.State == "checked-out") {
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) {
@@ -179,11 +179,11 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		return
 	}
 
-	// Validate Time Semantics
-	if err := incomingBook.ValidateTimeSemanticsForUpdateBook(currentBook); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
-		return
-	}
+	// // Validate Time Semantics
+	// if err := incomingBook.ValidateTimeSemanticsForUpdateBook(currentBook); err != nil {
+	// 	c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+	// 	return
+	// }
 
 	// Now we will pass the current state and incoming state to the action table
 	currentState := currentBook.State // this is a pointer
