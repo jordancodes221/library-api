@@ -174,7 +174,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}
 
 	// General validation for logic (additional validation needed depending on specific action table helper function called later)
-	if err := incomingBook.GeneralValidationForUpdateBook(); err != nil {
+	if err := incomingBook.GeneralValidationForUpdateBook(currentBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
