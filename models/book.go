@@ -118,22 +118,56 @@ func (incomingBook *Book) FurtherValidationForCreateBook() (error) {
 ////////// UPDATE BOOK /////////
 //////////////////////////////// 
 
-func (incomingBook *Book) GeneralValidationForUpdateBook() (error) {
+func (incomingBook *Book) GeneralValidationForUpdateBook(currentBook *Book) (error) {
+	//////////////////////////////// 
+	//////// ISBN AND STATE ////////
+	//////////////////////////////// 
+	
 	// Ensure ISBN is provided
-	if incomingBook.ISBN == nil {
+	ptrIncomingISBN := incomingBook.ISBN
+	if ptrIncomingISBN == nil {
 		return errors.New("Missing ISBN in the incoming request.")
 	}
 	
 	// Ensure state is provided
-	if incomingBook.State == nil {
+	ptrIncomingState := incomingBook.State
+	if ptrIncomingState == nil {
 		return errors.New("Missing State in the incoming request.")
 	}
 
-	return nil
-}
+	//////////////////////////////// 
+	/////////// ID FIELDS //////////
+	//////////////////////////////// 
+	currentState := *currentBook.State
+	incomingState := *ptrIncomingState // at this point we know it is not nil, so we can de-reference it
 
-// Validate Time Semantics
-func (incomingBook *Book) ValidateTimeSemanticsForUpdateBook(currentBook *Book) (error) {
+	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
+	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
+
+	if ((currentState == "available" && incomingState == "checked-out") || (currentState == "checked-out" && incomingState == "available")){	
+		if (ptrCheckedOutCustomerID == nil) {
+			return errors.New("Expected checked-out customer ID.")
+		}
+	
+		if (ptrOnHoldCustomerID != nil) {
+			return errors.New("Did not expect on-hold customer ID.")
+		}
+	}
+
+	if ((currentState == "available" && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available")){
+		if (ptrOnHoldCustomerID == nil) {
+			return errors.New("Expected on-hold customer ID.")
+		}
+	
+		if (ptrCheckedOutCustomerID != nil) {
+			return errors.New("Did not expect checked-out customer ID.")
+		}
+	}
+
+	//////////////////////////////// 
+	////////// TIME FIELDS /////////
+	//////////////////////////////// 
+
 	// Validate Time Created
 	ptrIncomingTimeCreated := incomingBook.TimeCreated
 	if ptrIncomingTimeCreated != nil {
@@ -166,38 +200,6 @@ func (incomingBook *Book) ValidateTimeSemanticsForUpdateBook(currentBook *Book) 
 			}
 		}
 		
-	}
-
-	return nil
-}
-
-// Semantic Validation for checkout and returnBook
-func (incomingBook *Book) ValidateIDSemanticsForCheckedOutUpdate() (error) {
-	checkedOutCustomerID := incomingBook.CheckedOutCustomerID
-	onHoldCustomerID := incomingBook.OnHoldCustomerID
-
-	if (checkedOutCustomerID == nil) {
-		return errors.New("Expected checked-out customer ID.")
-	}
-
-	if (onHoldCustomerID != nil) {
-		return errors.New("Did not expect on-hold customer ID.")
-	}
-
-	return nil
-}
-
-// Semantic Validation for placeHold and releaseHold
-func (incomingBook *Book) ValidateIDSemanticsForOnHoldUpdate() (error) {
-	checkedOutCustomerID := incomingBook.CheckedOutCustomerID
-	onHoldCustomerID := incomingBook.OnHoldCustomerID
-
-	if (onHoldCustomerID == nil) {
-		return errors.New("Expected on-hold customer ID.")
-	}
-
-	if (checkedOutCustomerID != nil) {
-		return errors.New("Did not expect checked-out customer ID.")
 	}
 
 	return nil
