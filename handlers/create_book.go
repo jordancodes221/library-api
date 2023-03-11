@@ -1,6 +1,6 @@
 package handlers
 
-import ( // h.Books, bookByISBN
+import (
 	"example/library_project/models"
 	"example/library_project/utils"
 
@@ -11,7 +11,7 @@ import ( // h.Books, bookByISBN
 	// "errors"
 )
 
-// POST
+// CreateBook allows the client to add a new book to the library
 func (h *BooksHandler) CreateBook(c *gin.Context) {
 	// Decode JSON to book struct
 	newBook := new(models.Book) // the "new" keyword allocates memory for models.Book, and returns a pointer to it

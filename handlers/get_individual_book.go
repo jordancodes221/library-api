@@ -1,11 +1,11 @@
 package handlers
 
-import ( // h.Books, bookByISBN	
+import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
-// GET (individual book)
+// GetIndividualBook allows the client to get an individual book in the library by its ISBN
 func (h *BooksHandler) GetIndividualBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 	book, err := h.bookByISBN(isbn)

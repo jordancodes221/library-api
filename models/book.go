@@ -5,18 +5,28 @@ import (
 	"errors"
 )
 
+// Book represents an individual book in the library
 type Book struct{
+	// ISBN is a unique identifier for the book
 	ISBN 			*string 	`json:"isbn"`
+
+	// State is the current state of the book. It can be "available", "on-hold", or "checked-out"
 	State 			*string 	`json:"state"`
 
+	// OnHoldCustomerID identifies the customer who has the book on-hold. This field must also be provided in any request to place or release a hold on a book
 	OnHoldCustomerID 	*string 	`json:"onholdcustomerid"`
+
+	// CheckedOutCustomerID identifies the customer who has the book checked-out. This field must also be provided in any request to checkout or return a book
 	CheckedOutCustomerID 	*string 	`json:"checkedoutcustomerid"`
 
+	// TimeCreated is the time the book was created. It is immutable by the client
 	TimeCreated 		*time.Time 	`json:"timecreated"`
+
+	// TimeUpdated is the time the book was last updated. It is immutable by the client
 	TimeUpdated  		*time.Time	`json:"timeupdated"`
 }
 
-// Only if a field is present, we validate it to make sure if it is within range
+// Validate ensures that all fields provided in the request are within range for both creating a new book and updating an existing book
 func (incomingBook *Book) Validate() (error) {
 
 	// ISBN
@@ -50,10 +60,7 @@ func (incomingBook *Book) Validate() (error) {
 	return nil
 }
 
-//////////////////////////////// 
-////////// CREATE BOOK /////////
-////////////////////////////////
-
+// ValidateLogicForCreateBook validates requests for the logic specific to creating a new book
 func (incomingBook *Book) ValidateLogicForCreateBook() (error) {
 	// Ensure ISBN is provided
 	if incomingBook.ISBN == nil {
@@ -114,15 +121,8 @@ func (incomingBook *Book) ValidateLogicForCreateBook() (error) {
 	return nil
 }
 
-//////////////////////////////// 
-////////// UPDATE BOOK /////////
-//////////////////////////////// 
-
-func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) {
-	//////////////////////////////// 
-	//////// ISBN AND STATE ////////
-	//////////////////////////////// 
-	
+// ValidateLogicForUpdateBook validates requests for the logic unique to updating an existing book
+func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) {	
 	// Ensure ISBN is provided
 	ptrIncomingISBN := incomingBook.ISBN
 	if ptrIncomingISBN == nil {
@@ -135,15 +135,14 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 		return errors.New("Missing State in the incoming request.")
 	}
 
-	//////////////////////////////// 
-	/////////// ID FIELDS //////////
-	//////////////////////////////// 
+	// Ensure on-hold and checked-out IDs are provided correctly, given the state
 	currentState := *currentBook.State
 	incomingState := *ptrIncomingState // at this point we know it is not nil, so we can de-reference it
 
 	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
 	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
 
+	// This corresponds to the checkout and returnBook helper functions in the action table
 	if ((currentState == "available" && incomingState == "checked-out") || (currentState == "checked-out" && incomingState == "available")){	
 		if (ptrCheckedOutCustomerID == nil) {
 			return errors.New("Expected checked-out customer ID.")
@@ -154,6 +153,7 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 		}
 	}
 
+	// This corresponds to the placeHold and releaseHold helper functions in the action table
 	if ((currentState == "available" && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available")){
 		if (ptrOnHoldCustomerID == nil) {
 			return errors.New("Expected on-hold customer ID.")
@@ -163,10 +163,6 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 			return errors.New("Did not expect checked-out customer ID.")
 		}
 	}
-
-	//////////////////////////////// 
-	////////// TIME FIELDS /////////
-	//////////////////////////////// 
 
 	// Validate Time Created
 	ptrIncomingTimeCreated := incomingBook.TimeCreated

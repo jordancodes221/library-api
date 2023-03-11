@@ -1,11 +1,11 @@
 package handlers
 
-import ( 	 // h.Books, bookByISBN
+import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
-// DELETE
+// DeleteBook allows the client to delete a book from the library
 func (h *BooksHandler) DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 

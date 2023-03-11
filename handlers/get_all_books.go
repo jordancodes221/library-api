@@ -1,13 +1,13 @@
 package handlers
 
-import ( // h.Books, bookByISBN
+import (
 	"example/library_project/models"
 	
 	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
-// GET (all books)
+// GetAllBooks allows the client to get all of the books in the library
 func (h *BooksHandler) GetAllBooks(c *gin.Context) {
 	// Make a slice containing all the values from mapOfBooks
 	var vals []*models.Book

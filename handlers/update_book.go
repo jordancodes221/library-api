@@ -1,6 +1,6 @@
 package handlers
 
-import ( // h.books, h.bookByISBN
+import (
 	"example/library_project/models"
 	"example/library_project/utils"
 	
@@ -11,7 +11,6 @@ import ( // h.books, h.bookByISBN
 	"encoding/json"
 )
 
-// No Match Error
 var noMatchError error = errors.New("ID's do not match.")
 
 // checkout
@@ -111,7 +110,6 @@ func noOperation(currentBook *models.Book, incomingBook *models.Book) (*models.B
 	return currentBook, nil
 }
 
-// First key is current state, 2nd key is incoming state
 var actionTable = map[string]map[string]func(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
 	"available": {
 		"available": noOperation,
@@ -128,7 +126,7 @@ var actionTable = map[string]map[string]func(currentBook *models.Book, incomingB
 	},
 }
 
-// PATCH
+// UpdateBook allows the client to update the state of an existing book in the library
 func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
@@ -167,9 +165,9 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	currentState := currentBook.State // this is a pointer
 
 	ptrIncomingState := incomingBook.State 
-	incomingState := *ptrIncomingState // due to GeneralValidationForUpdateBook, we know ptrIncomingState is not nil
+	incomingState := *ptrIncomingState // due to ValidateLogicForUpdateBook, we know ptrIncomingState is not nil so we can de-reference it
 
-	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook) // now the action table needs to be re-written to 2nd parameter is struct instead of map
+	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
