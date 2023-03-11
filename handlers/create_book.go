@@ -28,7 +28,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Logic validation
-	if err := newBook.FurtherValidationForCreateBook(); err != nil {
+	if err := newBook.ValidateLogicForCreateBook(); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}

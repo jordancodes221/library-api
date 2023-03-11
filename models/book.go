@@ -54,7 +54,7 @@ func (incomingBook *Book) Validate() (error) {
 ////////// CREATE BOOK /////////
 ////////////////////////////////
 
-func (incomingBook *Book) FurtherValidationForCreateBook() (error) {
+func (incomingBook *Book) ValidateLogicForCreateBook() (error) {
 	// Ensure ISBN is provided
 	if incomingBook.ISBN == nil {
 		return errors.New("Missing ISBN in the incoming request.")
@@ -118,7 +118,7 @@ func (incomingBook *Book) FurtherValidationForCreateBook() (error) {
 ////////// UPDATE BOOK /////////
 //////////////////////////////// 
 
-func (incomingBook *Book) GeneralValidationForUpdateBook(currentBook *Book) (error) {
+func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) {
 	//////////////////////////////// 
 	//////// ISBN AND STATE ////////
 	//////////////////////////////// 
