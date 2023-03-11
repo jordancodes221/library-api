@@ -18,6 +18,10 @@ var noMatchError error = errors.New("ID's do not match.")
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := incomingBook.ValidateIDsForCheckedOut(currentBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "available") {
 		*currentBook.State = "checked-out"
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
@@ -54,6 +58,10 @@ func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	// available --> on-hold
 	// on-hold --> on-hold
 func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := incomingBook.ValidateIDsForOnHold(currentBook); err != nil {
+		return nil, err
+	}
+	
 	if (*currentBook.State == "available") {
 		*currentBook.State = "on-hold"
 		currentBook.OnHoldCustomerID = incomingBook.OnHoldCustomerID
@@ -74,6 +82,10 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 // releaseHold
 	// on-hold --> available
 func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := incomingBook.ValidateIDsForOnHold(currentBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) {
 			*currentBook.State = "available"
@@ -90,6 +102,10 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 // returnBook
 	// checked-out --> available
 func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+	if err := incomingBook.ValidateIDsForCheckedOut(currentBook); err != nil {
+		return nil, err
+	}
+
 	if (*currentBook.State == "checked-out") {
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) {
 			*currentBook.State = "available"

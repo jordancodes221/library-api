@@ -135,39 +135,6 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 		return errors.New("Missing State in the incoming request.")
 	}
 
-	// Ensure on-hold and checked-out IDs are provided correctly, given the state
-	currentState := *currentBook.State
-	incomingState := *ptrIncomingState // at this point we know it is not nil, so we can de-reference it
-
-	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
-	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
-
-	// This corresponds to the checkout and returnBook helper functions in the action table
-		// checkout is called when the incoming state is "checked-out", regardless of what the current state is
-		// returnBook is only called when the current state is "checked-out" and the incoming state is "available"
-	if (incomingState == "checked-out" || (currentState == "checked-out" && incomingState == "available")) {	
-		if (ptrCheckedOutCustomerID == nil) {
-			return errors.New("Expected checked-out customer ID.")
-		}
-	
-		if (ptrOnHoldCustomerID != nil) {
-			return errors.New("Did not expect on-hold customer ID.")
-		}
-	}
-
-	// This corresponds to the placeHold and releaseHold helper functions in the action table
-		// placeHold is called when the current state is "available" or "on-hold" and the incoming state is "on-hold"
-		// releaseHold is called when the current state is "on-hold" and the incoing state is "available"
-	if ((currentState == "available" || currentState == "on-hold") && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available") {
-		if (ptrOnHoldCustomerID == nil) {
-			return errors.New("Expected on-hold customer ID.")
-		}
-	
-		if (ptrCheckedOutCustomerID != nil) {
-			return errors.New("Did not expect checked-out customer ID.")
-		}
-	}
-
 	// Validate Time Created
 	ptrIncomingTimeCreated := incomingBook.TimeCreated
 	if ptrIncomingTimeCreated != nil {
@@ -200,6 +167,38 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 			}
 		}
 		
+	}
+
+	return nil
+}
+
+// ValidateIDsForCheckedOut ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the checkout and returnBook helper functions
+func (incomingBook *Book) ValidateIDsForCheckedOut(currentBook *Book) (error) {
+	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
+	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
+
+	if (ptrCheckedOutCustomerID == nil) {
+		return errors.New("Expected checked-out customer ID.")
+	}
+
+	if (ptrOnHoldCustomerID != nil) {
+		return errors.New("Did not expect on-hold customer ID.")
+	}
+
+	return nil
+}
+
+// ValidateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
+func (incomingBook *Book) ValidateIDsForOnHold(currentBook *Book) (error) {
+	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
+	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
+
+	if (ptrOnHoldCustomerID == nil) {
+		return errors.New("Expected on-hold customer ID.")
+	}
+
+	if (ptrCheckedOutCustomerID != nil) {
+		return errors.New("Did not expect checked-out customer ID.")
 	}
 
 	return nil
