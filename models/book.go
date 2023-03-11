@@ -145,7 +145,7 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 	// This corresponds to the checkout and returnBook helper functions in the action table
 		// checkout is called when the incoming state is "checked-out", regardless of what the current state is
 		// returnBook is only called when the current state is "checked-out" and the incoming state is "available"
-	if ((incomingState == "checked-out") || (currentState == "checked-out" && incomingState == "available")){	
+	if (incomingState == "checked-out" || (currentState == "checked-out" && incomingState == "available")) {	
 		if (ptrCheckedOutCustomerID == nil) {
 			return errors.New("Expected checked-out customer ID.")
 		}
@@ -158,7 +158,7 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 	// This corresponds to the placeHold and releaseHold helper functions in the action table
 		// placeHold is called when the current state is "available" or "on-hold" and the incoming state is "on-hold"
 		// releaseHold is called when the current state is "on-hold" and the incoing state is "available"
-	if (((currentState == "available") || (currentState == "on-hold")) && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available")){
+	if ((currentState == "available" || currentState == "on-hold") && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available") {
 		if (ptrOnHoldCustomerID == nil) {
 			return errors.New("Expected on-hold customer ID.")
 		}
