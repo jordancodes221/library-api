@@ -156,9 +156,9 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 	}
 
 	// This corresponds to the placeHold and releaseHold helper functions in the action table
-		// placeHold is called when the current state is "available" and the incoming state is "on-hold"
+		// placeHold is called when the current state is "available" or "on-hold" and the incoming state is "on-hold"
 		// releaseHold is called when the current state is "on-hold" and the incoing state is "available"
-	if ((currentState == "available" && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available")){
+	if (((currentState == "available") || (currentState == "on-hold")) && incomingState == "on-hold") || (currentState == "on-hold" && incomingState == "available")){
 		if (ptrOnHoldCustomerID == nil) {
 			return errors.New("Expected on-hold customer ID.")
 		}
