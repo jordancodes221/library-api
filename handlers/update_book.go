@@ -33,13 +33,13 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, noMatchError
+			return nil, errors.New("Cannot complete checkout. Someone else has the book on-hold.")
 		}
 	} else if (*currentBook.State == "checked-out") {
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
 			// pass
 		} else {
-			return nil, noMatchError
+			return nil, errors.New("Cannot complete checkout. Someone else has the book checked-out.")
 		}
 	} else {
 		// pass
@@ -70,7 +70,7 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
 		} else {
-			return nil, noMatchError
+			return nil, errors.New("Cannot place hold. Someone else already has the book on-hold.")
 		}
 	} else {
 		// pass 
@@ -92,7 +92,7 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 			currentBook.OnHoldCustomerID = nil
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, noMatchError
+			return nil, errors.New("Someone else has this book on hold. You cannot release the hold on a book that do not currently have on-hold.")
 		}
 	}
 
@@ -112,7 +112,7 @@ func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Bo
 			currentBook.CheckedOutCustomerID = nil
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, noMatchError
+			return nil, errors.New("Someone else has this book checked-out. You cannot return a book that you did not check out.")
 		}
 	}
 
