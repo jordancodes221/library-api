@@ -183,7 +183,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 
 	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": err.Error()})
 		return
 	}
 
