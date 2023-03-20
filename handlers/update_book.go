@@ -11,8 +11,6 @@ import (
 	"encoding/json"
 )
 
-var noMatchError error = errors.New("ID's do not match.")
-
 // checkout
 	// available --> checked-out
 	// on-hold --> checked-out
