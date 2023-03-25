@@ -178,8 +178,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	// Now we will pass the current state and incoming state to the action table
 	currentState := currentBook.State // this is a pointer
 
-	ptrIncomingState := incomingBook.State 
-	incomingState := *ptrIncomingState // due to ValidateLogicForUpdateBook, we know ptrIncomingState is not nil so we can de-reference it
+	incomingState := *incomingBook.State  // due to ValidateLogicForUpdateBook, we know incomingBook.State is not nil so we can de-reference it
 
 	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook)
 	if err != nil {
