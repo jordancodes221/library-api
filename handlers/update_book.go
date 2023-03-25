@@ -49,7 +49,7 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 // conflict
 	// checked-out --> on-hold
 func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	return nil, errors.New("Invalid state transfer requested.")
+	return nil, errors.New("Invalid state transition requested.")
 }
 
 // placeHold
