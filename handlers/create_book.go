@@ -34,8 +34,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Make sure ISBN is not already in-use
-	ptrIncomingISBN := newBook.ISBN
-	if _, ok := h.Books[*ptrIncomingISBN]; ok {
+	if _, ok := h.Books[*newBook.ISBN]; ok {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
@@ -44,7 +43,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	newBook.TimeCreated = utils.ToPtr(time.Now())
 
 	// Add the new book to our library
-	h.Books[*ptrIncomingISBN] = newBook
+	h.Books[*newBook.ISBN] = newBook
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }
