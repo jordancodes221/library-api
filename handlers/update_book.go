@@ -56,14 +56,25 @@ func ValidateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.B
 	return nil
 }
 
+// ValidateIDsForCheckedOut ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the checkout and returnBook helper functions
+func ValidateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Book) (error) {
+	if (incomingBook.CheckedOutCustomerID == nil) {
+		return errors.New("Expected checked-out customer ID.")
+	}
 
+	if (incomingBook.OnHoldCustomerID != nil) {
+		return errors.New("Did not expect on-hold customer ID.")
+	}
+
+	return nil
+}
 
 // checkout
 	// available --> checked-out
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDsForCheckedOut(currentBook); err != nil {
+	if err := ValidateIDsForCheckedOut(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 
@@ -147,7 +158,7 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 // returnBook
 	// checked-out --> available
 func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDsForCheckedOut(currentBook); err != nil {
+	if err := ValidateIDsForCheckedOut(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 
