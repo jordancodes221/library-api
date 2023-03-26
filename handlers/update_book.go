@@ -11,6 +11,53 @@ import (
 	"encoding/json"
 )
 
+// ValidateLogicForUpdateBook validates requests for the logic unique to updating an existing book
+func ValidateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.Book) (error) {	
+	// Ensure ISBN is provided
+	if incomingBook.ISBN == nil {
+		return errors.New("Missing ISBN in the incoming request.")
+	}
+	
+	// Ensure state is provided
+	if incomingBook.State == nil {
+		return errors.New("Missing State in the incoming request.")
+	}
+
+	// Validate Time Created
+	if incomingBook.TimeCreated != nil {
+		// Since incomingBook.TimeCreated is not nil, we can de-reference it
+		incomingTimeCreated := *incomingBook.TimeCreated
+
+		currentTimeCreated := *currentBook.TimeCreated // should not need to check that currentBook.TimeCreated != nil, because all books have a Time Created and this field cannot be changed by the client
+		
+		if incomingTimeCreated != currentTimeCreated {
+			return errors.New("Requested time created does not match existing time created.")
+		}
+	}
+
+	// Validate Time Updated
+	if incomingBook.TimeUpdated != nil {
+		incomingTimeUpdated := *incomingBook.TimeUpdated // since incomingBook.TimeUpdated is not nil, we can de-reference it
+		// perhaps de-referencing incomingBook.TimeUpdated could be moved to the else-block below
+		// However, I am keeping it here so it can be de-refenced on the line after checking it is not nil
+
+		// Now, we check whether the current book has a time updated provided or not
+		if currentBook.TimeUpdated == nil {
+			return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+		} else { // currentBook.TimeUpdated != nil
+			currentTimeUpdated := *currentBook.TimeUpdated // in this case, currentBook.TimeUpdated is not nil so we can de-reference it
+			if incomingTimeUpdated != currentTimeUpdated {
+				return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+			}
+		}
+		
+	}
+
+	return nil
+}
+
+
+
 // checkout
 	// available --> checked-out
 	// on-hold --> checked-out
@@ -170,7 +217,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}
 
 	// Validate logic
-	if err := incomingBook.ValidateLogicForUpdateBook(currentBook); err != nil {
+	if err := ValidateLogicForUpdateBook(incomingBook, currentBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
