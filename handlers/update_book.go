@@ -11,8 +11,8 @@ import (
 	"encoding/json"
 )
 
-// ValidateLogicForUpdateBook validates requests for the logic unique to updating an existing book
-func ValidateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.Book) (error) {	
+// validateLogicForUpdateBook validates requests for the logic unique to updating an existing book
+func validateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.Book) (error) {	
 	// Ensure ISBN is provided
 	if incomingBook.ISBN == nil {
 		return errors.New("Missing ISBN in the incoming request.")
@@ -56,8 +56,8 @@ func ValidateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.B
 	return nil
 }
 
-// ValidateIDsForCheckedOut ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the checkout and returnBook helper functions
-func ValidateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Book) (error) {
+// validateIDsForCheckedOut ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the checkout and returnBook helper functions
+func validateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Book) (error) {
 	if (incomingBook.CheckedOutCustomerID == nil) {
 		return errors.New("Expected checked-out customer ID.")
 	}
@@ -69,8 +69,8 @@ func ValidateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Boo
 	return nil
 }
 
-// ValidateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
-func ValidateIDsForOnHold(incomingBook *models.Book, currentBook *models.Book) (error) {
+// validateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
+func validateIDsForOnHold(incomingBook *models.Book, currentBook *models.Book) (error) {
 	if (incomingBook.OnHoldCustomerID == nil) {
 		return errors.New("Expected on-hold customer ID.")
 	}
@@ -87,7 +87,7 @@ func ValidateIDsForOnHold(incomingBook *models.Book, currentBook *models.Book) (
 	// on-hold --> checked-out
 	// checked-out --> checked-out
 func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDsForCheckedOut(incomingBook, currentBook); err != nil {
+	if err := validateIDsForCheckedOut(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 
@@ -127,7 +127,7 @@ func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	// available --> on-hold
 	// on-hold --> on-hold
 func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDsForOnHold(incomingBook, currentBook); err != nil {
+	if err := validateIDsForOnHold(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 	
@@ -151,7 +151,7 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 // releaseHold
 	// on-hold --> available
 func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDsForOnHold(incomingBook, currentBook); err != nil {
+	if err := validateIDsForOnHold(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 
@@ -171,7 +171,7 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 // returnBook
 	// checked-out --> available
 func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := ValidateIDsForCheckedOut(incomingBook, currentBook); err != nil {
+	if err := validateIDsForCheckedOut(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 
@@ -241,7 +241,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}
 
 	// Validate logic
-	if err := ValidateLogicForUpdateBook(incomingBook, currentBook); err != nil {
+	if err := validateLogicForUpdateBook(incomingBook, currentBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
@@ -249,7 +249,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	// Now we will pass the current state and incoming state to the action table
 	currentState := currentBook.State // this is a pointer
 
-	incomingState := *incomingBook.State  // due to ValidateLogicForUpdateBook, we know incomingBook.State is not nil so we can de-reference it
+	incomingState := *incomingBook.State  // due to validateLogicForUpdateBook, we know incomingBook.State is not nil so we can de-reference it
 
 	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook)
 	if err != nil {
