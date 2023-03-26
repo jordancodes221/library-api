@@ -59,16 +59,3 @@ func (incomingBook *Book) Validate() (error) {
 
 	return nil
 }
-
-// ValidateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
-func (incomingBook *Book) ValidateIDsForOnHold(currentBook *Book) (error) {
-	if (incomingBook.OnHoldCustomerID == nil) {
-		return errors.New("Expected on-hold customer ID.")
-	}
-
-	if (incomingBook.CheckedOutCustomerID != nil) {
-		return errors.New("Did not expect checked-out customer ID.")
-	}
-
-	return nil
-}

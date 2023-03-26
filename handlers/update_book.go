@@ -69,6 +69,19 @@ func ValidateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Boo
 	return nil
 }
 
+// ValidateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
+func ValidateIDsForOnHold(incomingBook *models.Book, currentBook *models.Book) (error) {
+	if (incomingBook.OnHoldCustomerID == nil) {
+		return errors.New("Expected on-hold customer ID.")
+	}
+
+	if (incomingBook.CheckedOutCustomerID != nil) {
+		return errors.New("Did not expect checked-out customer ID.")
+	}
+
+	return nil
+}
+
 // checkout
 	// available --> checked-out
 	// on-hold --> checked-out
@@ -114,7 +127,7 @@ func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	// available --> on-hold
 	// on-hold --> on-hold
 func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDsForOnHold(currentBook); err != nil {
+	if err := ValidateIDsForOnHold(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 	
@@ -138,7 +151,7 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 // releaseHold
 	// on-hold --> available
 func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	if err := incomingBook.ValidateIDsForOnHold(currentBook); err != nil {
+	if err := ValidateIDsForOnHold(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
 
