@@ -11,8 +11,8 @@ import (
 	"errors"
 )
 
-// ValidateLogicForCreateBook validates requests for the logic specific to creating a new book
-func ValidateLogicForCreateBook(incomingBook *models.Book) (error) {
+// validateLogicForCreateBook validates requests for the logic specific to creating a new book
+func validateLogicForCreateBook(incomingBook *models.Book) (error) {
 	// Ensure ISBN is provided
 	if incomingBook.ISBN == nil {
 		return errors.New("Missing ISBN in the incoming request.")
@@ -89,7 +89,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Logic validation
-	if err := ValidateLogicForCreateBook(newBook); err != nil {
+	if err := validateLogicForCreateBook(newBook); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
 		return
 	}
