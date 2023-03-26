@@ -124,25 +124,21 @@ func (incomingBook *Book) ValidateLogicForCreateBook() (error) {
 // ValidateLogicForUpdateBook validates requests for the logic unique to updating an existing book
 func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) {	
 	// Ensure ISBN is provided
-	ptrIncomingISBN := incomingBook.ISBN
-	if ptrIncomingISBN == nil {
+	if incomingBook.ISBN == nil {
 		return errors.New("Missing ISBN in the incoming request.")
 	}
 	
 	// Ensure state is provided
-	ptrIncomingState := incomingBook.State
-	if ptrIncomingState == nil {
+	if incomingBook.State == nil {
 		return errors.New("Missing State in the incoming request.")
 	}
 
 	// Validate Time Created
-	ptrIncomingTimeCreated := incomingBook.TimeCreated
-	if ptrIncomingTimeCreated != nil {
-		// Since ptrIncomingTimeCreated is not nil, we can de-reference it
-		incomingTimeCreated := *ptrIncomingTimeCreated
+	if incomingBook.TimeCreated != nil {
+		// Since incomingBook.TimeCreated is not nil, we can de-reference it
+		incomingTimeCreated := *incomingBook.TimeCreated
 
-		ptrCurrentTimeCreated := currentBook.TimeCreated
-		currentTimeCreated := *ptrCurrentTimeCreated // should not need to check that ptrCurrentTimeCreated != nil, because all books have a Time Created and this field cannot be changed by the client
+		currentTimeCreated := *currentBook.TimeCreated // should not need to check that currentBook.TimeCreated != nil, because all books have a Time Created and this field cannot be changed by the client
 		
 		if incomingTimeCreated != currentTimeCreated {
 			return errors.New("Requested time created does not match existing time created.")
@@ -150,18 +146,16 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 	}
 
 	// Validate Time Updated
-	ptrIncomingTimeUpdated := incomingBook.TimeUpdated
-	if ptrIncomingTimeUpdated != nil {
-		incomingTimeUpdated := *ptrIncomingTimeUpdated // since ptrIncomingTimeUpdated is not nil, we can de-reference it
-		// perhaps de-referencing ptrIncomingTimeUpdated could be moved to the else-block below
+	if incomingBook.TimeUpdated != nil {
+		incomingTimeUpdated := *incomingBook.TimeUpdated // since incomingBook.TimeUpdated is not nil, we can de-reference it
+		// perhaps de-referencing incomingBook.TimeUpdated could be moved to the else-block below
 		// However, I am keeping it here so it can be de-refenced on the line after checking it is not nil
 
 		// Now, we check whether the current book has a time updated provided or not
-		ptrCurrentTimeUpdated := currentBook.TimeUpdated // keep in mind this could be nil
-		if ptrCurrentTimeUpdated == nil {
+		if currentBook.TimeUpdated == nil {
 			return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
-		} else { // ptrCurrentTimeUpdated != nil
-			currentTimeUpdated := *ptrCurrentTimeUpdated // in this case, ptrCurrentTimeUpdated is not nil so we can de-reference it
+		} else { // currentBook.TimeUpdated != nil
+			currentTimeUpdated := *currentBook.TimeUpdated // in this case, currentBook.TimeUpdated is not nil so we can de-reference it
 			if incomingTimeUpdated != currentTimeUpdated {
 				return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
 			}
@@ -174,14 +168,11 @@ func (incomingBook *Book) ValidateLogicForUpdateBook(currentBook *Book) (error) 
 
 // ValidateIDsForCheckedOut ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the checkout and returnBook helper functions
 func (incomingBook *Book) ValidateIDsForCheckedOut(currentBook *Book) (error) {
-	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
-	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
-
-	if (ptrCheckedOutCustomerID == nil) {
+	if (incomingBook.CheckedOutCustomerID == nil) {
 		return errors.New("Expected checked-out customer ID.")
 	}
 
-	if (ptrOnHoldCustomerID != nil) {
+	if (incomingBook.OnHoldCustomerID != nil) {
 		return errors.New("Did not expect on-hold customer ID.")
 	}
 
@@ -190,14 +181,11 @@ func (incomingBook *Book) ValidateIDsForCheckedOut(currentBook *Book) (error) {
 
 // ValidateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
 func (incomingBook *Book) ValidateIDsForOnHold(currentBook *Book) (error) {
-	ptrCheckedOutCustomerID := incomingBook.CheckedOutCustomerID
-	ptrOnHoldCustomerID := incomingBook.OnHoldCustomerID
-
-	if (ptrOnHoldCustomerID == nil) {
+	if (incomingBook.OnHoldCustomerID == nil) {
 		return errors.New("Expected on-hold customer ID.")
 	}
 
-	if (ptrCheckedOutCustomerID != nil) {
+	if (incomingBook.CheckedOutCustomerID != nil) {
 		return errors.New("Did not expect checked-out customer ID.")
 	}
 
