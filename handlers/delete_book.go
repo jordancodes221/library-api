@@ -17,10 +17,10 @@ func (h *BooksHandler) DeleteBook(c *gin.Context) {
 	}
 
 	if book == nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
+		c.Status(http.StatusNoContent)
 		return
 	}
 
 	delete(h.Books, isbn)
-	c.Status(http.StatusNoContent) // 204 status code if successful
+	c.Status(http.StatusNoContent)
 }
