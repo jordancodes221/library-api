@@ -9,18 +9,23 @@ import (
 	"errors"
 	"time"
 	"encoding/json"
+	"fmt"
 )
+
+var invalidRequestErr = errors.New("invalid request")
 
 // validateLogicForUpdateBook validates requests for the logic unique to updating an existing book
 func validateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.Book) (error) {	
 	// Ensure ISBN is provided
 	if incomingBook.ISBN == nil {
-		return errors.New("Missing ISBN in the incoming request.")
+		return fmt.Errorf("Expected 'isbn' to be non-null: %w", invalidRequestErr)
+		// return errors.New("Missing ISBN in the incoming request.")
 	}
 	
 	// Ensure state is provided
 	if incomingBook.State == nil {
-		return errors.New("Missing State in the incoming request.")
+		return fmt.Errorf("Expected 'state' to be non-null: %w", invalidRequestErr)
+		// return errors.New("Missing State in the incoming request.")
 	}
 
 	// Validate Time Created
@@ -31,7 +36,8 @@ func validateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.B
 		currentTimeCreated := *currentBook.TimeCreated // should not need to check that currentBook.TimeCreated != nil, because all books have a Time Created and this field cannot be changed by the client
 		
 		if incomingTimeCreated != currentTimeCreated {
-			return errors.New("Requested time created does not match existing time created.")
+			return fmt.Errorf("'timecreated' cannot be modified: %w", invalidRequestErr)
+			// return errors.New("Requested time created does not match existing time created.")
 		}
 	}
 
@@ -43,11 +49,13 @@ func validateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.B
 
 		// Now, we check whether the current book has a time updated provided or not
 		if currentBook.TimeUpdated == nil {
-			return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+			return fmt.Errorf("'timeupdated' cannot be modified: %w", invalidRequestErr)
+			// return errors.New("Requested time updated does not match existing time updated.")
 		} else { // currentBook.TimeUpdated != nil
 			currentTimeUpdated := *currentBook.TimeUpdated // in this case, currentBook.TimeUpdated is not nil so we can de-reference it
 			if incomingTimeUpdated != currentTimeUpdated {
-				return errors.New("Requested time updated does not match existing time updated.") // should message be more specific?
+				return fmt.Errorf("'timeupdated' cannot be modified: %w", invalidRequestErr)
+				// return errors.New("Requested time updated does not match existing time updated.")
 			}
 		}
 		
