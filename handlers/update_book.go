@@ -272,8 +272,16 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 
 	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook)
 	if err != nil {
-		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": err.Error()})
-		return
+		if errors.Is(err, invalidRequestErr) {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
+			return
+		} else if errors.Is(err, conflictErr) {
+			c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": err.Error()})
+			return
+		} else {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
+			return
+		}
 	}
 
 	c.IndentedJSON(http.StatusOK, currentBook)
