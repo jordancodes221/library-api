@@ -13,6 +13,7 @@ import (
 )
 
 var invalidRequestErr = errors.New("invalid request")
+var conflictErr = errors.New("conflict")
 
 // validateLogicForUpdateBook validates requests for the logic unique to updating an existing book
 func validateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.Book) (error) {	
@@ -67,11 +68,13 @@ func validateLogicForUpdateBook(incomingBook *models.Book, currentBook *models.B
 // validateIDsForCheckedOut ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the checkout and returnBook helper functions
 func validateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Book) (error) {
 	if (incomingBook.CheckedOutCustomerID == nil) {
-		return errors.New("Expected checked-out customer ID.")
+		return fmt.Errorf("Expected 'checkedoutcustomerid' to be non-null: %w", invalidRequestErr)
+		// return errors.New("Expected checked-out customer ID.")
 	}
 
 	if (incomingBook.OnHoldCustomerID != nil) {
-		return errors.New("Did not expect on-hold customer ID.")
+		return fmt.Errorf("Expected 'onholdcustomerid' to be null: %w", invalidRequestErr)
+		// return errors.New("Did not expect on-hold customer ID.")
 	}
 
 	return nil
@@ -80,11 +83,13 @@ func validateIDsForCheckedOut(incomingBook *models.Book, currentBook *models.Boo
 // validateIDsForOnHold ensures the OnHoldCustomerID and CheckedOutCustomerID fields are correctly populated for the placeHold and releaseHold helper functions
 func validateIDsForOnHold(incomingBook *models.Book, currentBook *models.Book) (error) {
 	if (incomingBook.OnHoldCustomerID == nil) {
-		return errors.New("Expected on-hold customer ID.")
+		return fmt.Errorf("Expected 'onholdcustomerid' to be non-null: %w", invalidRequestErr)
+		// return errors.New("Expected on-hold customer ID.")
 	}
 
 	if (incomingBook.CheckedOutCustomerID != nil) {
-		return errors.New("Did not expect checked-out customer ID.")
+		return fmt.Errorf("Expected 'checkedoutcustomerid' to be null: %w", invalidRequestErr)
+		// return errors.New("Did not expect checked-out customer ID.")
 	}
 
 	return nil
@@ -110,13 +115,15 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, errors.New("Cannot complete checkout. Someone else has the book on-hold.")
+			return nil, fmt.Errorf("Checkout failed as another customer has the book on-hold: %w", conflictErr)
+			// return nil, errors.New("Cannot complete checkout. Someone else has the book on-hold.")
 		}
 	} else if (*currentBook.State == "checked-out") {
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it checked out is the same one trying to check it out redundantly
 			// pass
 		} else {
-			return nil, errors.New("Cannot complete checkout. Someone else has the book checked-out.")
+			return nil, fmt.Errorf("Checkout failed as another customer has the book checked-out: %w", conflictErr)
+			// return nil, errors.New("Cannot complete checkout. Someone else has the book checked-out.")
 		}
 	} else {
 		// pass
