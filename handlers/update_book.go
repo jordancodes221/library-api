@@ -135,7 +135,8 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 // conflict
 	// checked-out --> on-hold
 func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
-	return nil, errors.New("Invalid state transition requested.")
+	return nil, fmt.Errorf("Invalid state transition requested: %w", conflictErr)
+	// return nil, errors.New("Invalid state transition requested.")
 }
 
 // placeHold
@@ -154,7 +155,8 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
 		} else {
-			return nil, errors.New("Cannot place hold. Someone else already has the book on-hold.")
+			return nil, fmt.Errorf("Placing hold failed as another customer has the book on-hold: %w", conflictErr)
+			// return nil, errors.New("Cannot place hold. Someone else already has the book on-hold.")
 		}
 	} else {
 		// pass 
@@ -176,7 +178,8 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 			currentBook.OnHoldCustomerID = nil
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, errors.New("Someone else has this book on hold. You cannot release the hold on a book that do not currently have on-hold.")
+			return nil, fmt.Errorf("Releasing hold failed as it is another customer who has the book on-hold: %w", conflictErr)
+			// return nil, errors.New("Someone else has this book on hold. You cannot release the hold on a book that do not currently have on-hold.")
 		}
 	}
 
@@ -196,7 +199,8 @@ func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Bo
 			currentBook.CheckedOutCustomerID = nil
 			currentBook.TimeUpdated = utils.ToPtr(time.Now())
 		} else {
-			return nil, errors.New("Someone else has this book checked-out. You cannot return a book that you did not check out.")
+			return nil, fmt.Errorf("Returning the book failed as it is another customer who has the book checked-out: %w", conflictErr)
+			// return nil, errors.New("Someone else has this book checked-out. You cannot return a book that you did not check out.")
 		}
 	}
 
