@@ -14,6 +14,18 @@ func TestBook_Validate(t *testing.T){
 		expectedErrorMessage string
 	}{
 		{
+			description: "Valid book", 
+			book: &Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: utils.ToPtr(time.Now()), 
+				TimeUpdated: utils.ToPtr(time.Time{}),
+			}, 
+			expectedErrorMessage: "",
+		}, 
+		{
 			description: "ISBN is the empty string", 
 			book: &Book{
 				ISBN: utils.ToPtr(""), 
@@ -30,6 +42,12 @@ func TestBook_Validate(t *testing.T){
 	for _, currentTestCase := range tests {
 		t.Log(currentTestCase.description)
 		actual := currentTestCase.book.Validate()
-		assert.EqualError(t, actual, currentTestCase.expectedErrorMessage)
+
+		if (currentTestCase.expectedErrorMessage == "") {
+			assert.Nil(t, actual)
+		} else {
+			assert.NotNil(t, actual)
+			assert.EqualError(t, actual, currentTestCase.expectedErrorMessage)
+		}
 	}
 }
