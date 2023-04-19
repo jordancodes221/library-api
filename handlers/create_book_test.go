@@ -59,19 +59,22 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 			},
 			expectedError: nil,
 		}, 
-		// {
-		// 	description: "ISBN is the empty string", 
-		// 	book: &models.Book{
-		// 		ISBN: utils.ToPtr(""), 
-		// 		State: utils.ToPtr("available"), 
-		// 		OnHoldCustomerID: nil, 
-		// 		CheckedOutCustomerID: nil, 
-		// 		TimeCreated: nil, 
-		// 		TimeUpdated: nil,
-		// 	}, 
-		// 	expectedStatusCode: 400,
-		// 	// expectedBody: "ISBN cannot be the empty string.",
-		// },
+		{
+			description: "ISBN is the empty string", 
+			book: &models.Book{
+				ISBN: utils.ToPtr(""), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("ISBN cannot be the empty string."),
+			},
+		},
 	}
 	
 	for _, currentTestCase := range tests {
@@ -107,6 +110,18 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 			 assert.Equal(t, currentTestCase.expectedBook.OnHoldCustomerID, actualBook.OnHoldCustomerID)
 			 assert.Equal(t, currentTestCase.expectedBook.CheckedOutCustomerID, actualBook.CheckedOutCustomerID)
 			 assert.Equal(t, currentTestCase.expectedBook.TimeUpdated, actualBook.TimeUpdated)
+		}
+
+		if currentTestCase.expectedError != nil {
+			// Decode response body into ErrorResponse struct
+			actualError := new(models.ErrorResponse)
+			dec := json.NewDecoder(w.Body)
+			if err := dec.Decode(&actualError); err != nil {
+				t.Fatal(err)
+			}
+
+			// Check if actual error is equal to expected
+			assert.Equal(t, currentTestCase.expectedError, actualError)
 		}
 	}
 }
