@@ -35,7 +35,8 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 		description string
 		book *models.Book
 		expectedStatusCode int
-		// expectedBody interface{}
+		expectedBook *models.Book
+		expectedError *models.ErrorResponse
 	}{
 		{
 			description: "Valid book", 
@@ -48,14 +49,15 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 				TimeUpdated: nil,
 			}, 
 			expectedStatusCode: 201,
-			// expectedBody: &models.Book{
-			// 	ISBN: utils.ToPtr("00000"), 
-			// 	State: utils.ToPtr("available"), 
-			// 	OnHoldCustomerID: nil, 
-			// 	CheckedOutCustomerID: nil, 
-			// 	TimeCreated: nil, 
-			// 	TimeUpdated: nil,
-			// },
+			expectedBook: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			},
+			expectedError: nil,
 		}, 
 		// {
 		// 	description: "ISBN is the empty string", 
