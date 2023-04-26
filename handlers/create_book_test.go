@@ -171,6 +171,166 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 				Message: utils.ToPtr("Missing State in the incoming request."),
 			},
 		},
+		{
+			description: "State is 'available', but on-hold customer ID is non-null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: utils.ToPtr("01"), 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have an on-hold customer ID when state is available."),
+			},
+		},
+		{
+			description: "State is 'available', but checked-out customer ID is non-null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: utils.ToPtr("02"), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have checked-out customer ID when state is available."),
+			},
+		},
+		{
+			description: "State is 'available', but both on-hold customer ID and checked-out customer ID are non-null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: utils.ToPtr("01"), 
+				CheckedOutCustomerID: utils.ToPtr("02"), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have an on-hold customer ID when state is available."),
+			},
+		},
+		{
+			description: "State is 'on-hold', but checked-out customer ID is non-null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("on-hold"), 
+				OnHoldCustomerID: utils.ToPtr("01"), 
+				CheckedOutCustomerID: utils.ToPtr("02"), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have checked-out customer ID when state is on-hold."),
+			},
+		},
+		{
+			description: "State is 'on-hold', but checked-out customer ID is non-null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("on-hold"), 
+				OnHoldCustomerID: utils.ToPtr("01"), 
+				CheckedOutCustomerID: utils.ToPtr("02"), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have checked-out customer ID when state is on-hold."),
+			},
+		},
+		{
+			description: "State is 'on-hold', but on-hold customer ID is null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("on-hold"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("State provided is on-hold, but no on-hold customer ID is provided."),
+			},
+		},
+		{
+			description: "State is 'on-hold', but checked-out customer ID is non-null and on-hold customer ID is null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("on-hold"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: utils.ToPtr("02"), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have checked-out customer ID when state is on-hold."),
+			},
+		},
+		{
+			description: "State is 'checked-out', but on-hold customer ID is non-null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("checked-out"), 
+				OnHoldCustomerID: utils.ToPtr("01"), 
+				CheckedOutCustomerID: utils.ToPtr("02"), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have on-hold customer ID when state is checked-out."),
+			},
+		},
+		{
+			description: "State is 'checked-out', but checked-out customer ID is null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("checked-out"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("State provided is checked-out, but no checked-out customer ID is provided."),
+			},
+		},
+		{
+			description: "State is 'checked-out', but on-hold customer ID is non-null and checked-out customer ID is null",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("checked-out"), 
+				OnHoldCustomerID: utils.ToPtr("01"), 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Cannot have on-hold customer ID when state is checked-out."),
+			},
+		},
 
 	}
 	
