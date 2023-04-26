@@ -123,6 +123,55 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 				Message: utils.ToPtr("Checked-out customer ID cannot be the empty string."),
 			},
 		},
+		{
+			description: "Book already exists",
+			book: &models.Book{
+				ISBN: utils.ToPtr("11111"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Book already exists."),
+			},
+		},
+		{
+			description: "Missing ISBN",
+			book: &models.Book{
+				ISBN: nil, 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Missing ISBN in the incoming request."),
+			},
+		},
+		{
+			description: "Missing State",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: nil, 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Missing State in the incoming request."),
+			},
+		},
+
 	}
 	
 	for _, currentTestCase := range tests {
