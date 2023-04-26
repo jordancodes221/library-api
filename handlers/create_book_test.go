@@ -39,7 +39,7 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 		expectedError *models.ErrorResponse
 	}{
 		{
-			description: "Valid book", 
+			description: "valid book", 
 			book: &models.Book{
 				ISBN: utils.ToPtr("00000"), 
 				State: utils.ToPtr("available"), 
@@ -75,6 +75,54 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 				Message: utils.ToPtr("ISBN cannot be the empty string."),
 			},
 		},
+		{
+			description: "Invalid state provided",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("invalid state"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Invalid state provided. State must be equal to one of: \"available\", \"on-hold\", or \"checked-out\"."),
+			},
+		},
+		{
+			description: "On-hold customer ID is the empty string",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("on-hold"), 
+				OnHoldCustomerID: utils.ToPtr(""), 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("On-hold customer ID cannot be the empty string."),
+			},
+		},
+		{
+			description: "Checked-out customer ID is the empty string",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("checked-out"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: utils.ToPtr(""), 
+				TimeCreated: nil, 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Checked-out customer ID cannot be the empty string."),
+			},
+		},
 	}
 	
 	for _, currentTestCase := range tests {
@@ -82,7 +130,7 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 		t.Log(currentTestCase.description)
 
 		bookJSON, _ := json.Marshal(*currentTestCase.book)
-		fmt.Println(*currentTestCase.book)
+
 		req, err := http.NewRequest("POST", "/books", bytes.NewBuffer(bookJSON))
 		if err != nil {
 			t.Fatal(err)
