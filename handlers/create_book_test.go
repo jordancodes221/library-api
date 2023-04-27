@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 	"encoding/json"
-	// "time"
+	"time"
 	"example/library_project/utils"
 	"example/library_project/models"
 	"github.com/stretchr/testify/assert"
@@ -329,6 +329,54 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 			expectedBook: nil,
 			expectedError: &models.ErrorResponse{
 				Message: utils.ToPtr("Cannot have on-hold customer ID when state is checked-out."),
+			},
+		},
+		{
+			description: "Time Created is provided",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: utils.ToPtr(time.Now()), 
+				TimeUpdated: nil,
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Client cannot provide time created when creating a new book."),
+			},
+		},
+		{
+			description: "Time Updated is provided",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: nil, 
+				TimeUpdated: utils.ToPtr(time.Now()),
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Client cannot provide time updated when creating a new book."),
+			},
+		},
+		{
+			description: "Time Created and Time Updated are both provided",
+			book: &models.Book{
+				ISBN: utils.ToPtr("00000"), 
+				State: utils.ToPtr("available"), 
+				OnHoldCustomerID: nil, 
+				CheckedOutCustomerID: nil, 
+				TimeCreated: utils.ToPtr(time.Now()), 
+				TimeUpdated: utils.ToPtr(time.Now()),
+			}, 
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Client cannot provide time created when creating a new book."),
 			},
 		},
 
