@@ -104,7 +104,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	newBook.TimeCreated = utils.ToPtr(time.Now())
 
 	// Add the new book to our library
-	h.Books[*newBook.ISBN] = newBook
+	h.Create(newBook)
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }
