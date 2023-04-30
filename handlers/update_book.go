@@ -284,5 +284,6 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		}
 	}
 
+	h.Update(currentBook)
 	c.IndentedJSON(http.StatusOK, currentBook)
 }
