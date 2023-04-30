@@ -21,6 +21,6 @@ func (h *BooksHandler) DeleteBook(c *gin.Context) {
 		return
 	}
 
-	delete(h.Books, isbn)
+	h.Delete(book)
 	c.Status(http.StatusNoContent)
 }
