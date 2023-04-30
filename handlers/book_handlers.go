@@ -10,3 +10,28 @@ type BooksHandler struct {
     Books map[string]*models.Book
 }
 
+func (h *BooksHandler) Create(newBook *models.Book) {
+	h.Books[*newBook.ISBN] = newBook
+}
+
+func (h *BooksHandler) Delete(book *models.Book) {
+	delete(h.Books, *book.ISBN)
+}
+
+func (h *BooksHandler) Update(book *models.Book) {
+	h.Books[*book.ISBN] = book
+}
+
+func (h *BooksHandler) Read(isbn string) (*models.Book, error) {
+	retrievedBook, ok := h.Books[isbn] // in the future, this could be a call to a database
+
+	// For scalability, we can add a database connection here. 
+	// If there is an error connecting to the database, then we will return: nil, InternalServerError
+
+	if ok {
+		return retrievedBook, nil
+	} else {
+		return nil, nil
+	}
+}
+
