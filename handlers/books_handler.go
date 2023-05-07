@@ -35,3 +35,16 @@ func (h *BooksHandler) Read(isbn string) (*models.Book, error) {
 	}
 }
 
+func (h *BooksHandler) ReadAll() ([]*models.Book, error) {	
+	all_books := make([]*models.Book, 0)
+
+	// For scalability, we can add a database connection here. 
+	// If there is an error connecting to the database, then we will return: nil, InternalServerError
+
+	for _, currentBook := range h.Books {
+		all_books = append(all_books, currentBook)
+	}
+
+	return all_books, nil
+}
+
