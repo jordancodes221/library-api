@@ -29,10 +29,14 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		"00001": existingBook1,
 	}
 
-	h := &BooksHandler{Books: library}
+	arbitraryTimeProvider := &utils.TestingDateTimeProvider{
+		ArbitraryTime: time.Date(2023, 1, 1, 1, 30, 0, 0, time.UTC),
+	}
 
-	arbitraryTimeCreated := time.Date(2023, 1, 1, 1, 30, 0, 0, time.UTC)
-	fmt.Println(arbitraryTimeCreated)
+	h := &BooksHandler{
+		Books: library,
+		DateTimeInterface: arbitraryTimeProvider,
+	}
 
 	tests := []struct{
 		description string
