@@ -9,7 +9,7 @@ import (
 type BooksHandler struct {
 	// Books is the library of all the books
     Books map[string]*models.Book
-	DateTimeInterface *utils.DateTimeProvider
+	DateTimeInterface utils.DateTimeProvider
 }
 
 func (h *BooksHandler) Create(newBook *models.Book) {
