@@ -15,9 +15,9 @@ func (p *ProductionDateTimeProvider) GetCurrentTime() (*time.Time) {
 }
 
 type TestingDateTimeProvider struct {
-	arbitraryTime time.Time
+	ArbitraryTime time.Time
 }
 
 func (t *TestingDateTimeProvider) GetCurrentTime() (*time.Time) {
-	return ToPtr(t.arbitraryTime)
+	return ToPtr(t.ArbitraryTime)
 }
