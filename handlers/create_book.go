@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"example/library_project/models"
-	"example/library_project/utils"
+	// "example/library_project/utils"
 
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"time"
+	// "time"
 	"encoding/json"
 	"errors"
 )
@@ -101,7 +101,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Update TimeCreated to now
-	newBook.TimeCreated = utils.ToPtr(time.Now())
+	newBook.TimeCreated = h.DateTimeInterface.GetCurrentTime()
 
 	// Add the new book to our library
 	h.Create(newBook)
