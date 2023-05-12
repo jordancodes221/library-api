@@ -94,8 +94,14 @@ func main() {
 		"0022" : bookInstance22,		
 	}
 
+	realTimeProvider := &utils.ProductionDateTimeProvider{}
+
+	h := &handlers.BooksHandler{
+		Books: mapOfBooks,
+		DateTimeInterface: realTimeProvider,
+	}
+
 	router := gin.Default()
-	h := &handlers.BooksHandler{Books: mapOfBooks}
 	router.GET("/books", h.GetAllBooks)
 	router.GET("/books/:isbn", h.GetIndividualBook)
 	router.POST("/books", h.CreateBook)
