@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"example/library_project/models"
 	"example/library_project/utils"
 	"example/library_project/dao"
 )
