@@ -7,6 +7,7 @@ import (
 	"time"
 	"example/library_project/utils"
 	"example/library_project/models"
+	"example/library_project/dao/inmemorydao"
 	"github.com/stretchr/testify/assert"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -25,18 +26,13 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
-	library := map[string]*models.Book{
-		"00001": existingBook1,
-	}
-
+	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	arbitraryTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: time.Date(2023, 1, 1, 1, 30, 0, 0, time.UTC),
 	}
 
-	h := &BooksHandler{
-		Books: library,
-		DateTimeInterface: arbitraryTimeProvider,
-	}
+	h := NewBooksHandler(daoFactory, arbitraryTimeProvider)
+	h.BookDAOInterface.Create(existingBook1)
 
 	tests := []struct{
 		description string
