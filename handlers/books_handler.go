@@ -8,13 +8,13 @@ import (
 // BooksHandlers is the struct on which all handler functions are defined as pointer-receiver functions
 type BooksHandler struct {
 	// Books is the library of all the books
-	Books dao.BookDAO
+	BookDAOInterface dao.BookDAO
 	DateTimeInterface utils.DateTimeProvider
 }
 
 func NewBooksHandler(daoFactory dao.DAOFactory, provider utils.DateTimeProvider) (*BooksHandler) {
 	return &BooksHandler{
-		Books: daoFactory.BookDAO(),
+		BookDAOInterface: daoFactory.BookDAO(),
 		DateTimeInterface: provider,
 	}
 }
