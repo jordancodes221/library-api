@@ -12,3 +12,10 @@ type BooksHandler struct {
 	Books dao.BookDAO
 	DateTimeInterface utils.DateTimeProvider
 }
+
+func NewBooksHandler(daoFactory dao.DAOFactory, provider utils.DateTimeProvider) (*BooksHandler) {
+	return &BooksHandler{
+		Books: daoFactory.BookDAO(),
+		DateTimeInterface: provider,
+	}
+}
