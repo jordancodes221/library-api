@@ -9,7 +9,7 @@ import (
 func (h *BooksHandler) DeleteBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	book, err := h.Read(isbn)
+	book, err := h.BookDAOInterface.Read(isbn)
 
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()}) // 500 status code
@@ -21,6 +21,6 @@ func (h *BooksHandler) DeleteBook(c *gin.Context) {
 		return
 	}
 
-	h.Delete(book)
+	h.BookDAOInterface.Delete(book)
 	c.Status(http.StatusNoContent)
 }
