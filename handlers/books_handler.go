@@ -3,6 +3,7 @@ package handlers
 import (
 	"example/library_project/models"
 	"example/library_project/utils"
+	"example/library_project/dao"
 )
 
 // BooksHandlers is the struct on which all handler functions are defined as pointer-receiver functions
