@@ -4,6 +4,8 @@ import (
 	"example/library_project/handlers"
 	"example/library_project/models"
 	"example/library_project/utils"
+
+	"example/library_project/dao/inmemorydao"
 	
 	// "net/http"
 	"github.com/gin-gonic/gin"
@@ -60,46 +62,36 @@ func main() {
 	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryIncomingTimeCreated), TimeUpdated: utils.ToPtr(arbitraryIncomingTimeUpdated)}
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
-	// Map of test data to be used in testing
-	var mapOfBooks = map[string]*models.Book{
-		"00" : bookInstance00,
-
-		"0000" : bookInstance0,
-		"0001" : bookInstance1,
-		"0002" : bookInstance2,
-
-		"0003" : bookInstance3,
-		"0004" : bookInstance4,
-		"0005" : bookInstance5,
-		"0006" : bookInstance6,
-		"0007" : bookInstance7,
-		"0008" : bookInstance8,
-
-		"0009" : bookInstance9,
-		"0010" : bookInstance10,
-		"0011" : bookInstance11,
-		"0012" : bookInstance12,
-		"0013" : bookInstance13,
-		"0014" : bookInstance14,
-
-		"0015" : bookInstance15,
-
-		"0016" : bookInstance16,
-		"0017" : bookInstance17,
-		"0018" : bookInstance18,
-
-		"0019" : bookInstance19,
-		"0020" : bookInstance20,
-		"0021" : bookInstance21,	
-		"0022" : bookInstance22,		
-	}
-
+	// Create an instance of BooksHandler using its constructor
+	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	realTimeProvider := &utils.ProductionDateTimeProvider{}
+	h := handlers.NewBooksHandler(daoFactory, realTimeProvider)
 
-	h := &handlers.BooksHandler{
-		Books: mapOfBooks,
-		DateTimeInterface: realTimeProvider,
-	}
+	// Add the test data to the book dao
+	h.BookDAOInterface.Create(bookInstance00)
+	h.BookDAOInterface.Create(bookInstance0)
+	h.BookDAOInterface.Create(bookInstance1)
+	h.BookDAOInterface.Create(bookInstance2)
+	h.BookDAOInterface.Create(bookInstance3)
+	h.BookDAOInterface.Create(bookInstance4)
+	h.BookDAOInterface.Create(bookInstance5)
+	h.BookDAOInterface.Create(bookInstance6)
+	h.BookDAOInterface.Create(bookInstance7)
+	h.BookDAOInterface.Create(bookInstance8)
+	h.BookDAOInterface.Create(bookInstance9)
+	h.BookDAOInterface.Create(bookInstance10)
+	h.BookDAOInterface.Create(bookInstance11)
+	h.BookDAOInterface.Create(bookInstance12)
+	h.BookDAOInterface.Create(bookInstance13)
+	h.BookDAOInterface.Create(bookInstance14)
+	h.BookDAOInterface.Create(bookInstance15)
+	h.BookDAOInterface.Create(bookInstance16)
+	h.BookDAOInterface.Create(bookInstance17)
+	h.BookDAOInterface.Create(bookInstance18)
+	h.BookDAOInterface.Create(bookInstance19)
+	h.BookDAOInterface.Create(bookInstance20)
+	h.BookDAOInterface.Create(bookInstance21)
+	h.BookDAOInterface.Create(bookInstance22)
 
 	router := gin.Default()
 	router.GET("/books", h.GetAllBooks)
