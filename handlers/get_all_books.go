@@ -7,7 +7,7 @@ import (
 
 // GetAllBooks allows the client to get all of the books in the library
 func (h *BooksHandler) GetAllBooks(c *gin.Context) {
-	all_books, err := h.ReadAll()
+	all_books, err := h.BookDAOInterface.ReadAll()
 
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()}) // 500 status code if unsuccessful
