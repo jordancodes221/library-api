@@ -95,7 +95,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Make sure ISBN is not already in-use
-	if _, ok := h.Books[*newBook.ISBN]; ok {
+	if bookWithISBNInUSe, _ := h.BookDAOInterface.Read(*newBook.ISBN); bookWithISBNInUSe != nil {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
@@ -104,7 +104,7 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	newBook.TimeCreated = h.DateTimeInterface.GetCurrentTime()
 
 	// Add the new book to our library
-	h.Create(newBook)
+	h.BookDAOInterface.Create(newBook)
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }
