@@ -234,7 +234,7 @@ var actionTable = map[string]map[string]func(currentBook *models.Book, incomingB
 func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	isbn := c.Param("isbn")
 
-	currentBook, err := h.Read(isbn)
+	currentBook, err := h.BookDAOInterface.Read(isbn)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
 		return
@@ -284,6 +284,6 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		}
 	}
 
-	h.Update(currentBook)
+	h.BookDAOInterface.Update(currentBook)
 	c.IndentedJSON(http.StatusOK, currentBook)
 }
