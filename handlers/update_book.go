@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"github.com/gin-gonic/gin"
 	"errors"
-	"time"
 	"encoding/json"
 	"fmt"
 )
@@ -99,7 +98,7 @@ func validateIDsForOnHold(incomingBook *models.Book, currentBook *models.Book) (
 	// available --> checked-out
 	// on-hold --> checked-out
 	// checked-out --> checked-out
-func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func checkout(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	if err := validateIDsForCheckedOut(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
@@ -107,13 +106,13 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 	if (*currentBook.State == "available") {
 		*currentBook.State = "checked-out"
 		currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-		currentBook.TimeUpdated = utils.ToPtr(time.Now())
+		currentBook.TimeUpdated = provider.GetCurrentTime()
 	} else if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.CheckedOutCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			*currentBook.State = "checked-out"
 			currentBook.OnHoldCustomerID = nil
 			currentBook.CheckedOutCustomerID = incomingBook.CheckedOutCustomerID
-			currentBook.TimeUpdated = utils.ToPtr(time.Now())
+			currentBook.TimeUpdated = provider.GetCurrentTime()
 		} else {
 			return nil, fmt.Errorf("Checkout failed as another customer has the book on-hold: %w", conflictErr)
 			// return nil, errors.New("Cannot complete checkout. Someone else has the book on-hold.")
@@ -134,7 +133,7 @@ func checkout(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 
 // conflict
 	// checked-out --> on-hold
-func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func conflict(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	return nil, fmt.Errorf("Invalid state transition requested: %w", conflictErr)
 	// return nil, errors.New("Invalid state transition requested.")
 }
@@ -142,7 +141,7 @@ func conflict(currentBook *models.Book, incomingBook *models.Book) (*models.Book
 // placeHold
 	// available --> on-hold
 	// on-hold --> on-hold
-func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func placeHold(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	if err := validateIDsForOnHold(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
@@ -150,7 +149,7 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 	if (*currentBook.State == "available") {
 		*currentBook.State = "on-hold"
 		currentBook.OnHoldCustomerID = incomingBook.OnHoldCustomerID
-		currentBook.TimeUpdated = utils.ToPtr(time.Now())
+		currentBook.TimeUpdated = provider.GetCurrentTime()
 	} else if (*currentBook.State == "on-hold") {
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) { // ensure the customer who currently has it on-hold is the same one trying to check it out
 			// pass
@@ -167,7 +166,7 @@ func placeHold(currentBook *models.Book, incomingBook *models.Book) (*models.Boo
 
 // releaseHold
 	// on-hold --> available
-func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func releaseHold(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	if err := validateIDsForOnHold(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
@@ -176,7 +175,7 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 		if (*currentBook.OnHoldCustomerID == *incomingBook.OnHoldCustomerID) {
 			*currentBook.State = "available"
 			currentBook.OnHoldCustomerID = nil
-			currentBook.TimeUpdated = utils.ToPtr(time.Now())
+			currentBook.TimeUpdated = provider.GetCurrentTime()
 		} else {
 			return nil, fmt.Errorf("Releasing hold failed as it is another customer who has the book on-hold: %w", conflictErr)
 			// return nil, errors.New("Someone else has this book on hold. You cannot release the hold on a book that do not currently have on-hold.")
@@ -188,7 +187,7 @@ func releaseHold(currentBook *models.Book, incomingBook *models.Book) (*models.B
 
 // returnBook
 	// checked-out --> available
-func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func returnBook(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	if err := validateIDsForCheckedOut(incomingBook, currentBook); err != nil {
 		return nil, err
 	}
@@ -197,7 +196,7 @@ func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Bo
 		if (*currentBook.CheckedOutCustomerID == *incomingBook.CheckedOutCustomerID) {
 			*currentBook.State = "available"
 			currentBook.CheckedOutCustomerID = nil
-			currentBook.TimeUpdated = utils.ToPtr(time.Now())
+			currentBook.TimeUpdated = provider.GetCurrentTime()
 		} else {
 			return nil, fmt.Errorf("Returning the book failed as it is another customer who has the book checked-out: %w", conflictErr)
 			// return nil, errors.New("Someone else has this book checked-out. You cannot return a book that you did not check out.")
@@ -210,11 +209,11 @@ func returnBook(currentBook *models.Book, incomingBook *models.Book) (*models.Bo
 // noOperation
 	// available --> available
 	// on-hold --> on-hold (when ID's match)
-func noOperation(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+func noOperation(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	return currentBook, nil
 }
 
-var actionTable = map[string]map[string]func(currentBook *models.Book, incomingBook *models.Book) (*models.Book, error) {
+var actionTable = map[string]map[string]func(currentBook *models.Book, incomingBook *models.Book, provider utils.DateTimeProvider) (*models.Book, error) {
 	"available": {
 		"available": noOperation,
 		"checked-out": checkout,
@@ -270,7 +269,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 
 	incomingState := *incomingBook.State  // due to validateLogicForUpdateBook, we know incomingBook.State is not nil so we can de-reference it
 
-	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook)
+	currentBook, err = actionTable[*currentState][incomingState](currentBook, incomingBook, h.DateTimeInterface)
 	if err != nil {
 		if errors.Is(err, invalidRequestErr) {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"ERROR": err.Error()})
