@@ -17,21 +17,23 @@ import (
 )
 
 func TestBooksHandler_UpdateBook(t *testing.T) {
+	arbitraryTime := time.Date(2023, 2, 2, 2, 30, 0, 0, time.UTC)
+	
 	existingBook1 := &models.Book{
 		ISBN: utils.ToPtr("00001"), 
 		State: utils.ToPtr("available"), 
 		OnHoldCustomerID: nil, 
 		CheckedOutCustomerID: nil, 
-		TimeCreated: nil, 
+		TimeCreated: utils.ToPtr(time.Now()), 
 		TimeUpdated: nil,
 	}
 
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
-	arbitraryTimeProvider := &utils.TestingDateTimeProvider{
-		ArbitraryTime: time.Date(2023, 1, 1, 1, 30, 0, 0, time.UTC),
+	fixedTimeProvider := &utils.TestingDateTimeProvider{
+		ArbitraryTime: arbitraryTime,
 	}
 
-	h := NewBooksHandler(daoFactory, arbitraryTimeProvider)
+	h := NewBooksHandler(daoFactory, fixedTimeProvider)
 	h.BookDAOInterface.Create(existingBook1)
 
 	tests := []struct{
@@ -60,7 +62,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 				OnHoldCustomerID: nil,
 				CheckedOutCustomerID: utils.ToPtr("02"),
 				TimeCreated: nil,
-				TimeUpdated: nil,
+				TimeUpdated: utils.ToPtr(arbitraryTime),
 			},
 			expectedError: nil,
 		},
@@ -102,6 +104,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			 assert.Equal(t, currentTestCase.expectedBook.State, actualBook.State)
 			 assert.Equal(t, currentTestCase.expectedBook.OnHoldCustomerID, actualBook.OnHoldCustomerID)
 			 assert.Equal(t, currentTestCase.expectedBook.CheckedOutCustomerID, actualBook.CheckedOutCustomerID)
+			 assert.Equal(t, currentTestCase.expectedBook.TimeUpdated, actualBook.TimeUpdated)
 		}
 
 		if currentTestCase.expectedError != nil {
