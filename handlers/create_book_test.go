@@ -24,7 +24,7 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 		State: utils.ToPtr("available"), 
 		OnHoldCustomerID: nil, 
 		CheckedOutCustomerID: nil, 
-		TimeCreated: utils.ToPtr(arbitraryTime), 
+		TimeCreated: utils.ToPtr(time.Now()), 
 		TimeUpdated: nil,
 	}
 
