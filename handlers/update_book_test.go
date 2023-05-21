@@ -29,6 +29,24 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	existingBook2 := &models.Book{
+		ISBN: utils.ToPtr("00002"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil, 
+		CheckedOutCustomerID: nil, 
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook3 := &models.Book{
+		ISBN: utils.ToPtr("00003"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil, 
+		CheckedOutCustomerID: nil, 
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
@@ -36,6 +54,8 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 
 	h := NewBooksHandler(daoFactory, fixedTimeProvider)
 	h.BookDAOInterface.Create(existingBook1)
+	h.BookDAOInterface.Create(existingBook2)
+	h.BookDAOInterface.Create(existingBook3)
 
 	tests := []struct{
 		description string
@@ -46,10 +66,54 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		expectedError *models.ErrorResponse
 	}{
 		{
-			description: "Successfully check out a book",
+			description: "Idempotent available to available operation",
 			currentBook: existingBook1,
 			incomingBook: &models.Book{
 				ISBN: utils.ToPtr("00001"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 200,
+			expectedBook: &models.Book{
+				ISBN: utils.ToPtr("00001"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: nil,
+			},
+			expectedError: nil,
+		},
+		{
+			description: "Successfully place hold on a book",
+			currentBook: existingBook2,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00002"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: utils.ToPtr("04"),
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 200,
+			expectedBook: &models.Book{
+				ISBN: utils.ToPtr("00002"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: utils.ToPtr("04"),
+				CheckedOutCustomerID: nil,
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
+			},
+			expectedError: nil,
+		},
+		{
+			description: "Successfully check out a book",
+			currentBook: existingBook3,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00003"),
 				State: utils.ToPtr("checked-out"),
 				OnHoldCustomerID: nil,
 				CheckedOutCustomerID: utils.ToPtr("02"),
@@ -58,7 +122,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			},
 			expectedStatusCode: 200,
 			expectedBook: &models.Book{
-				ISBN: utils.ToPtr("00001"),
+				ISBN: utils.ToPtr("00003"),
 				State: utils.ToPtr("checked-out"),
 				OnHoldCustomerID: nil,
 				CheckedOutCustomerID: utils.ToPtr("02"),
