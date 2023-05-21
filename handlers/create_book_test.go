@@ -17,22 +17,23 @@ import (
 )
 
 func TestBooksHandler_CreateBook(t *testing.T) {
+	arbitraryTime := time.Date(2023, 1, 1, 1, 30, 0, 0, time.UTC)
+
 	existingBook := &models.Book{
 		ISBN: utils.ToPtr("11111"), 
 		State: utils.ToPtr("available"), 
 		OnHoldCustomerID: nil, 
 		CheckedOutCustomerID: nil, 
-		TimeCreated: nil, 
+		TimeCreated: utils.ToPtr(arbitraryTime), 
 		TimeUpdated: nil,
 	}
 
-
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
-	arbitraryTimeProvider := &utils.TestingDateTimeProvider{
-		ArbitraryTime: time.Date(2023, 1, 1, 1, 30, 0, 0, time.UTC),
+	fixedTimeProvider := &utils.TestingDateTimeProvider{
+		ArbitraryTime: arbitraryTime,
 	}
 
-	h := NewBooksHandler(daoFactory, arbitraryTimeProvider)
+	h := NewBooksHandler(daoFactory, fixedTimeProvider)
 	h.BookDAOInterface.Create(existingBook)
 	
 	tests := []struct{
@@ -58,7 +59,7 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 				State: utils.ToPtr("available"), 
 				OnHoldCustomerID: nil, 
 				CheckedOutCustomerID: nil, 
-				TimeCreated: nil, 
+				TimeCreated: utils.ToPtr(arbitraryTime), 
 				TimeUpdated: nil,
 			},
 			expectedError: nil,
@@ -406,19 +407,13 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 
 		if currentTestCase.expectedBook != nil {
 			// Decode response body into Book struct
-			 actualBook := new(models.Book)
-			 dec := json.NewDecoder(w.Body)
-			 if err := dec.Decode(&actualBook); err != nil {
+			actualBook := new(models.Book)
+			dec := json.NewDecoder(w.Body)
+			if err := dec.Decode(&actualBook); err != nil {
 				t.Fatal(err)
-			 }
+			}
 
-			 // Check if actual book fields are equal to expected
-			 // Note we cannot check TimeCreated as this is set by the handler at run-time
-			 assert.Equal(t, currentTestCase.expectedBook.ISBN, actualBook.ISBN)
-			 assert.Equal(t, currentTestCase.expectedBook.State, actualBook.State)
-			 assert.Equal(t, currentTestCase.expectedBook.OnHoldCustomerID, actualBook.OnHoldCustomerID)
-			 assert.Equal(t, currentTestCase.expectedBook.CheckedOutCustomerID, actualBook.CheckedOutCustomerID)
-			 assert.Equal(t, currentTestCase.expectedBook.TimeUpdated, actualBook.TimeUpdated)
+			assert.Equal(t, currentTestCase.expectedBook, actualBook)
 		}
 
 		if currentTestCase.expectedError != nil {
