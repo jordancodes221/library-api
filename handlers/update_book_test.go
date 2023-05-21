@@ -93,19 +93,13 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 
 		if currentTestCase.expectedBook != nil {
 			// Decode response body into Book struct
-			 actualBook := new(models.Book)
-			 dec := json.NewDecoder(w.Body)
-			 if err := dec.Decode(&actualBook); err != nil {
+			actualBook := new(models.Book)
+			dec := json.NewDecoder(w.Body)
+			if err := dec.Decode(&actualBook); err != nil {
 				t.Fatal(err)
-			 }
+			}
 
-			 // Check if actual book fields are equal to expected
-			 // Note we cannot check TimeUpdated as this is set by the handler at run-time
-			 assert.Equal(t, currentTestCase.expectedBook.ISBN, actualBook.ISBN)
-			 assert.Equal(t, currentTestCase.expectedBook.State, actualBook.State)
-			 assert.Equal(t, currentTestCase.expectedBook.OnHoldCustomerID, actualBook.OnHoldCustomerID)
-			 assert.Equal(t, currentTestCase.expectedBook.CheckedOutCustomerID, actualBook.CheckedOutCustomerID)
-			 assert.Equal(t, currentTestCase.expectedBook.TimeUpdated, actualBook.TimeUpdated)
+			assert.Equal(t, currentTestCase.expectedBook, actualBook)
 		}
 
 		if currentTestCase.expectedError != nil {
