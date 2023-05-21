@@ -17,20 +17,21 @@ import (
 )
 
 func TestBooksHandler_UpdateBook(t *testing.T) {
-	arbitraryTime := time.Date(2023, 2, 2, 2, 30, 0, 0, time.UTC)
+	arbitraryTimeCreated := time.Date(2023, 2, 1, 1, 30, 0, 0, time.UTC)
+	arbitraryTimeUpdated := time.Date(2023, 2, 2, 1, 30, 0, 0, time.UTC)
 	
 	existingBook1 := &models.Book{
 		ISBN: utils.ToPtr("00001"), 
 		State: utils.ToPtr("available"), 
 		OnHoldCustomerID: nil, 
 		CheckedOutCustomerID: nil, 
-		TimeCreated: utils.ToPtr(time.Now()), 
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
 		TimeUpdated: nil,
 	}
 
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
-		ArbitraryTime: arbitraryTime,
+		ArbitraryTime: arbitraryTimeUpdated,
 	}
 
 	h := NewBooksHandler(daoFactory, fixedTimeProvider)
@@ -61,8 +62,8 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 				State: utils.ToPtr("checked-out"),
 				OnHoldCustomerID: nil,
 				CheckedOutCustomerID: utils.ToPtr("02"),
-				TimeCreated: nil,
-				TimeUpdated: utils.ToPtr(arbitraryTime),
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
 			},
 			expectedError: nil,
 		},
