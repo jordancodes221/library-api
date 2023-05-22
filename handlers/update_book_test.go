@@ -92,6 +92,16 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	// exitingBook9 will be used for the invalid checked-out to on-hold operation
+	existingBook9 := &models.Book{
+		ISBN: utils.ToPtr("00009"), 
+		State: utils.ToPtr("checked-out"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: utils.ToPtr("08"),
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
@@ -106,7 +116,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	h.BookDAOInterface.Create(existingBook6)
 	h.BookDAOInterface.Create(existingBook7)
 	h.BookDAOInterface.Create(existingBook8)
-	// h.BookDAOInterface.Create(existingBook9)
+	h.BookDAOInterface.Create(existingBook9)
 	// h.BookDAOInterface.Create(existingBook10)
 	// h.BookDAOInterface.Create(existingBook11)
 	// h.BookDAOInterface.Create(existingBook12)
@@ -335,6 +345,23 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 				TimeUpdated: nil,
 			},
 			expectedError: nil,
+		},
+		{
+			description: "Invalid checked-out to on-hold operation",
+			currentBook: existingBook9,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00009"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: utils.ToPtr("08"),
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Invalid state transition requested: conflict"),
+			},
 		},
 	}
 
