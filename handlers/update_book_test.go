@@ -102,6 +102,60 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	existingBook10 := &models.Book{
+		ISBN: utils.ToPtr("000010"), 
+		State: utils.ToPtr("checked-out"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: utils.ToPtr("10"),
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook11 := &models.Book{
+		ISBN: utils.ToPtr("000011"), 
+		State: utils.ToPtr("checked-out"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: utils.ToPtr("10"),
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook12 := &models.Book{
+		ISBN: utils.ToPtr("000012"), 
+		State: utils.ToPtr("checked-out"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: utils.ToPtr("10"),
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook13 := &models.Book{
+		ISBN: utils.ToPtr("000013"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("10"),
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook14 := &models.Book{
+		ISBN: utils.ToPtr("000014"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("10"),
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook15 := &models.Book{
+		ISBN: utils.ToPtr("000015"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("10"),
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
@@ -117,12 +171,12 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	h.BookDAOInterface.Create(existingBook7)
 	h.BookDAOInterface.Create(existingBook8)
 	h.BookDAOInterface.Create(existingBook9)
-	// h.BookDAOInterface.Create(existingBook10)
-	// h.BookDAOInterface.Create(existingBook11)
-	// h.BookDAOInterface.Create(existingBook12)
-	// h.BookDAOInterface.Create(existingBook13)
-	// h.BookDAOInterface.Create(existingBook14)
-	// h.BookDAOInterface.Create(existingBook15)
+	h.BookDAOInterface.Create(existingBook10)
+	h.BookDAOInterface.Create(existingBook11)
+	h.BookDAOInterface.Create(existingBook12)
+	h.BookDAOInterface.Create(existingBook13)
+	h.BookDAOInterface.Create(existingBook14)
+	h.BookDAOInterface.Create(existingBook15)
 	// h.BookDAOInterface.Create(existingBook16)
 	// h.BookDAOInterface.Create(existingBook17)
 	// h.BookDAOInterface.Create(existingBook18)
@@ -347,7 +401,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			description: "Invalid checked-out to on-hold operation",
+			description: "Invalid checked-out to on-hold operation (invalid state transition)",
 			currentBook: existingBook9,
 			incomingBook: &models.Book{
 				ISBN: utils.ToPtr("00009"),
@@ -361,6 +415,108 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			expectedBook: nil,
 			expectedError: &models.ErrorResponse{
 				Message: utils.ToPtr("Invalid state transition requested: conflict"),
+			},
+		},
+		{
+			description: "Invalid checked-out to available (IDs do not match)",
+			currentBook: existingBook10,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00010"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("20"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Returning the book failed as it is another customer who has the book checked-out: conflict"),
+			},
+		},
+		{
+			description: "Invalid checked-out to checked-out (IDs do not match)",
+			currentBook: existingBook11,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00011"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("20"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Checkout failed as another customer has the book checked-out: conflict"),
+			},
+		},
+		{
+			description: "Invalid checked-out to on-hold (invalid state transition and IDs do not match)",
+			currentBook: existingBook12,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00012"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("20"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Invalid state transition requested: conflict"),
+			},
+		},
+		{
+			description: "Invalid on-hold to available (IDs do not match)",
+			currentBook: existingBook13,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00013"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: utils.ToPtr("20"),
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Releasing hold failed as it is another customer who has the book on-hold: conflict"),
+			},
+		},
+		{
+			description: "Invalid on-hold to checked-out (IDs do not match)",
+			currentBook: existingBook14,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00014"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("20"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Checkout failed as another customer has the book on-hold: conflict"),
+			},
+		},
+		{
+			description: "Invalid on-hold to on-hold (IDs do not match)",
+			currentBook: existingBook15,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00015"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: utils.ToPtr("20"),
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 409,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Placing hold failed as another customer has the book on-hold: conflict"),
 			},
 		},
 	}
