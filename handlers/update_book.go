@@ -240,7 +240,7 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 	}
 
 	if currentBook == nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "Book not found."})
 		return
 	}	
 
