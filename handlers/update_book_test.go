@@ -156,6 +156,24 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	existingBook16 := &models.Book{
+		ISBN: utils.ToPtr("000016"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook17 := &models.Book{
+		ISBN: utils.ToPtr("000017"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
@@ -177,8 +195,8 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	h.BookDAOInterface.Create(existingBook13)
 	h.BookDAOInterface.Create(existingBook14)
 	h.BookDAOInterface.Create(existingBook15)
-	// h.BookDAOInterface.Create(existingBook16)
-	// h.BookDAOInterface.Create(existingBook17)
+	h.BookDAOInterface.Create(existingBook16)
+	h.BookDAOInterface.Create(existingBook17)
 	// h.BookDAOInterface.Create(existingBook18)
 	// h.BookDAOInterface.Create(existingBook19)
 	// h.BookDAOInterface.Create(existingBook20)
@@ -517,6 +535,40 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			expectedBook: nil,
 			expectedError: &models.ErrorResponse{
 				Message: utils.ToPtr("Placing hold failed as another customer has the book on-hold: conflict"),
+			},
+		},
+		{
+			description: "Missing state in request",
+			currentBook: existingBook16,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00016"),
+				State: nil,
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'state' to be non-null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid state in request",
+			currentBook: existingBook17,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00017"),
+				State: utils.ToPtr("invalid-state"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Invalid state provided. State must be equal to one of: \"available\", \"on-hold\", or \"checked-out\"."),
 			},
 		},
 	}
