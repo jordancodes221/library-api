@@ -174,6 +174,16 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	// existingBook18 is used for the "Book not found" test case so do not add it do the BookDAO
+	existingBook18 := &models.Book{
+		ISBN: utils.ToPtr("000018"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
@@ -197,7 +207,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	h.BookDAOInterface.Create(existingBook15)
 	h.BookDAOInterface.Create(existingBook16)
 	h.BookDAOInterface.Create(existingBook17)
-	// h.BookDAOInterface.Create(existingBook18)
+	// existingBook18 is used for the "Book not found" test case
 	// h.BookDAOInterface.Create(existingBook19)
 	// h.BookDAOInterface.Create(existingBook20)
 	// h.BookDAOInterface.Create(existingBook21)
@@ -569,6 +579,23 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			expectedBook: nil,
 			expectedError: &models.ErrorResponse{
 				Message: utils.ToPtr("Invalid state provided. State must be equal to one of: \"available\", \"on-hold\", or \"checked-out\"."),
+			},
+		},
+		{
+			description: "Book not found",
+			currentBook: existingBook18,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00018"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("100"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 404,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Book not found."),
 			},
 		},
 	}
