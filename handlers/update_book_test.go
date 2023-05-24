@@ -238,6 +238,60 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	existingBook25 := &models.Book{
+		ISBN: utils.ToPtr("000025"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook26 := &models.Book{
+		ISBN: utils.ToPtr("000026"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook27 := &models.Book{
+		ISBN: utils.ToPtr("000027"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook28 := &models.Book{
+		ISBN: utils.ToPtr("000028"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("04"),
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook29 := &models.Book{
+		ISBN: utils.ToPtr("000029"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("04"),
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook30 := &models.Book{
+		ISBN: utils.ToPtr("000030"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("04"),
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
 
 
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
@@ -270,12 +324,12 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	h.BookDAOInterface.Create(existingBook22)
 	h.BookDAOInterface.Create(existingBook23)
 	h.BookDAOInterface.Create(existingBook24)
-	// h.BookDAOInterface.Create(existingBook25)
-	// h.BookDAOInterface.Create(existingBook26)
-	// h.BookDAOInterface.Create(existingBook27)
-	// h.BookDAOInterface.Create(existingBook28)
-	// h.BookDAOInterface.Create(existingBook29)
-	// h.BookDAOInterface.Create(existingBook30)
+	h.BookDAOInterface.Create(existingBook25)
+	h.BookDAOInterface.Create(existingBook26)
+	h.BookDAOInterface.Create(existingBook27)
+	h.BookDAOInterface.Create(existingBook28)
+	h.BookDAOInterface.Create(existingBook29)
+	h.BookDAOInterface.Create(existingBook30)
 	// h.BookDAOInterface.Create(existingBook31)
 	// h.BookDAOInterface.Create(existingBook32)
 	// h.BookDAOInterface.Create(existingBook33)
@@ -745,9 +799,9 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		},
 		{
 			description: "Invalid return book request (expected checked-out customer ID to be non-null and on-hold customer ID to be null)",
-			currentBook: existingBook23,
+			currentBook: existingBook24,
 			incomingBook: &models.Book{
-				ISBN: utils.ToPtr("00023"),
+				ISBN: utils.ToPtr("00024"),
 				State: utils.ToPtr("available"),
 				OnHoldCustomerID: utils.ToPtr("200"),
 				CheckedOutCustomerID: nil,
@@ -758,6 +812,108 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			expectedBook: nil,
 			expectedError: &models.ErrorResponse{
 				Message: utils.ToPtr("Expected 'checkedoutcustomerid' to be non-null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid place hold request (expected on-hold customer ID to be non-null)",
+			currentBook: existingBook25,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00025"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'onholdcustomerid' to be non-null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid place hold request (expected checked-out customer ID to be null)",
+			currentBook: existingBook26,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00026"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: utils.ToPtr("04"),
+				CheckedOutCustomerID: utils.ToPtr("100"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'checkedoutcustomerid' to be null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid place hold request (expected on-hold customer ID to be non-null and checked-out customer to be null)",
+			currentBook: existingBook27,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00027"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("100"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'onholdcustomerid' to be non-null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid release hold request (expected on-hold customer ID to be non-null)",
+			currentBook: existingBook28,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00028"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("100"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'onholdcustomerid' to be non-null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid release hold request (expected checked-out customer ID to be null)",
+			currentBook: existingBook29,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00029"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: utils.ToPtr("04"),
+				CheckedOutCustomerID: utils.ToPtr("100"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'checkedoutcustomerid' to be null: invalid request"),
+			},
+		},
+		{
+			description: "Invalid release hold request (expected on-hold customer ID to be non-null and checked-out customer to be null)",
+			currentBook: existingBook30,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00030"),
+				State: utils.ToPtr("on-hold"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("100"),
+				TimeCreated: nil,
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("Expected 'onholdcustomerid' to be non-null: invalid request"),
 			},
 		},
 	}
