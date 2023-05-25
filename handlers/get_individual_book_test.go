@@ -56,6 +56,15 @@ func TestBooksHandler_GetIndividualBook(t *testing.T) {
 			},
 			expectedError: nil,
 		},
+		{
+			description: "Book not found",
+			isbn: "00002",
+			expectedStatusCode: 404,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("REQUEST SUCCESSFUL. BOOK NOT FOUND"),
+			},
+		},
 	}
 
 	r := gin.Default()
