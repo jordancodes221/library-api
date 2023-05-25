@@ -16,7 +16,7 @@ func (h *BooksHandler) GetIndividualBook(c *gin.Context) {
 	}
 
 	if book == nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"details": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
+		c.IndentedJSON(http.StatusNotFound, gin.H{"ERROR": "REQUEST SUCCESSFUL. BOOK NOT FOUND"})
 		return
 	}
 
