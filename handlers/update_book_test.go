@@ -19,6 +19,11 @@ import (
 func TestBooksHandler_UpdateBook(t *testing.T) {
 	arbitraryTimeCreated := time.Date(2023, 2, 1, 1, 30, 0, 0, time.UTC)
 	arbitraryTimeUpdated := time.Date(2023, 2, 2, 1, 30, 0, 0, time.UTC)
+
+	incorrectTimeCreated := time.Date(2023, 3, 1, 1, 30, 0, 0, time.UTC)
+	incorrectTimeUpdated := time.Date(2023, 3, 3, 1, 30, 0, 0, time.UTC)
+
+	initialTimeUpdated := time.Date(2023, 4, 4, 1, 30, 0, 0, time.UTC)
 	
 	existingBook1 := &models.Book{
 		ISBN: utils.ToPtr("00001"), 
@@ -292,7 +297,59 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
+	existingBook31 := &models.Book{
+		ISBN: utils.ToPtr("000031"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
 
+	existingBook32 := &models.Book{
+		ISBN: utils.ToPtr("000032"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
+	}
+
+	existingBook33 := &models.Book{
+		ISBN: utils.ToPtr("000033"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
+	}
+
+	existingBook34 := &models.Book{
+		ISBN: utils.ToPtr("000034"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: nil,
+	}
+
+	existingBook35 := &models.Book{
+		ISBN: utils.ToPtr("000035"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: utils.ToPtr(initialTimeUpdated),
+	}
+
+	existingBook36 := &models.Book{
+		ISBN: utils.ToPtr("000036"), 
+		State: utils.ToPtr("available"), 
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: utils.ToPtr(arbitraryTimeCreated), 
+		TimeUpdated: utils.ToPtr(initialTimeUpdated),
+	}
 
 	daoFactory := &inmemorydao.InMemoryDAOFactory{}
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
@@ -330,11 +387,12 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	h.BookDAOInterface.Create(existingBook28)
 	h.BookDAOInterface.Create(existingBook29)
 	h.BookDAOInterface.Create(existingBook30)
-	// h.BookDAOInterface.Create(existingBook31)
-	// h.BookDAOInterface.Create(existingBook32)
-	// h.BookDAOInterface.Create(existingBook33)
-	// h.BookDAOInterface.Create(existingBook34)
-
+	h.BookDAOInterface.Create(existingBook31)
+	h.BookDAOInterface.Create(existingBook32)
+	h.BookDAOInterface.Create(existingBook33)
+	h.BookDAOInterface.Create(existingBook34)
+	h.BookDAOInterface.Create(existingBook35)
+	h.BookDAOInterface.Create(existingBook36)
 
 	tests := []struct{
 		description string
@@ -915,6 +973,123 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 			expectedError: &models.ErrorResponse{
 				Message: utils.ToPtr("Expected 'onholdcustomerid' to be non-null: invalid request"),
 			},
+		},
+		{
+			description: "Invalid request (TimeCreated cannot be modified)",
+			currentBook: existingBook31,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00031"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: utils.ToPtr(incorrectTimeCreated),
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("'timecreated' cannot be modified: invalid request"),
+			},
+		},
+		{
+			description: "Invalid request (TimeUpdated cannot be modified)",
+			currentBook: existingBook32,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00032"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: nil,
+				TimeUpdated: utils.ToPtr(incorrectTimeUpdated),
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("'timeupdated' cannot be modified: invalid request"),
+			},
+		},
+		{
+			description: "Invalid request (TimeCreated and TimeUpdated cannot be modified)",
+			currentBook: existingBook33,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("00033"),
+				State: utils.ToPtr("available"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: nil,
+				TimeCreated: utils.ToPtr(incorrectTimeCreated),
+				TimeUpdated: utils.ToPtr(incorrectTimeUpdated),
+			},
+			expectedStatusCode: 400,
+			expectedBook: nil,
+			expectedError: &models.ErrorResponse{
+				Message: utils.ToPtr("'timecreated' cannot be modified: invalid request"),
+			},
+		},
+		{
+			description: "Successfuly checkout book (correct TimeCreated provided)",
+			currentBook: existingBook34,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("000034"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("02"),
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: nil,
+			},
+			expectedStatusCode: 200,
+			expectedBook: &models.Book{
+				ISBN: utils.ToPtr("000034"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("02"),
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
+			},
+			expectedError: nil,
+		},
+		{
+			description: "Successfuly checkout book (correct TimeUpdated provided)",
+			currentBook: existingBook35,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("000035"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("02"),
+				TimeCreated: nil,
+				TimeUpdated: utils.ToPtr(initialTimeUpdated),
+			},
+			expectedStatusCode: 200,
+			expectedBook: &models.Book{
+				ISBN: utils.ToPtr("000035"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("02"),
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
+			},
+			expectedError: nil,
+		},
+		{
+			description: "Successfuly checkout book (correct TimeCreated and TimeUpdated provided)",
+			currentBook: existingBook36,
+			incomingBook: &models.Book{
+				ISBN: utils.ToPtr("000036"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("02"),
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: utils.ToPtr(initialTimeUpdated),
+			},
+			expectedStatusCode: 200,
+			expectedBook: &models.Book{
+				ISBN: utils.ToPtr("000036"),
+				State: utils.ToPtr("checked-out"),
+				OnHoldCustomerID: nil,
+				CheckedOutCustomerID: utils.ToPtr("02"),
+				TimeCreated: utils.ToPtr(arbitraryTimeCreated),
+				TimeUpdated: utils.ToPtr(arbitraryTimeUpdated),
+			},
+			expectedError: nil,
 		},
 	}
 
