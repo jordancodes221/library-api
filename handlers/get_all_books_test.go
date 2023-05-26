@@ -29,8 +29,17 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 
 	existingBook2 := &models.Book{
 		ISBN: utils.ToPtr("00002"), 
-		State: utils.ToPtr("available"), 
+		State: utils.ToPtr("checked-out"), 
 		OnHoldCustomerID: nil, 
+		CheckedOutCustomerID: utils.ToPtr("02"), 
+		TimeCreated: utils.ToPtr(arbitraryTime), 
+		TimeUpdated: nil,
+	}
+
+	existingBook3 := &models.Book{
+		ISBN: utils.ToPtr("00003"), 
+		State: utils.ToPtr("on-hold"), 
+		OnHoldCustomerID: utils.ToPtr("04"), 
 		CheckedOutCustomerID: nil, 
 		TimeCreated: utils.ToPtr(arbitraryTime), 
 		TimeUpdated: nil,
@@ -44,18 +53,19 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 	h := NewBooksHandler(daoFactory, fixedTimeProvider)
 	h.BookDAOInterface.Create(existingBook1)
 	h.BookDAOInterface.Create(existingBook2)
+	h.BookDAOInterface.Create(existingBook3)
 
 	tests := []struct{
 		description string
 		expectedStatusCode int
-		expectedBooks []*models.Book
+		expectedBooks *[]models.Book
 		expectedError *models.ErrorResponse
 	}{
 		{
 			description: "Successfully get all books",
 			expectedStatusCode: 200,
-			expectedBooks: []*models.Book{
-				&models.Book{
+			expectedBooks: &[]models.Book{
+				models.Book{
 					ISBN: utils.ToPtr("00001"),
 					State: utils.ToPtr("available"),
 					OnHoldCustomerID: nil,
@@ -63,10 +73,18 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 					TimeCreated: utils.ToPtr(arbitraryTime),
 					TimeUpdated: nil,
 				},
-				&models.Book{
+				models.Book{
 					ISBN: utils.ToPtr("00002"),
-					State: utils.ToPtr("available"),
+					State: utils.ToPtr("checked-out"),
 					OnHoldCustomerID: nil,
+					CheckedOutCustomerID: utils.ToPtr("02"),
+					TimeCreated: utils.ToPtr(arbitraryTime),
+					TimeUpdated: nil,
+				},
+				models.Book{
+					ISBN: utils.ToPtr("00003"),
+					State: utils.ToPtr("on-hold"),
+					OnHoldCustomerID: utils.ToPtr("04"),
 					CheckedOutCustomerID: nil,
 					TimeCreated: utils.ToPtr(arbitraryTime),
 					TimeUpdated: nil,
@@ -98,23 +116,11 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 			// Decode response body into Book struct
 			actualBooks := new([]models.Book)
 			dec := json.NewDecoder(w.Body)
-			if err := dec.Decode(actualBooks); err != nil {
+			if err := dec.Decode(&actualBooks); err != nil {
 				t.Fatal(err)
 			}
 
-			fmt.Println("")
-
-			fmt.Print("ACTUAL BOOKS: ")
-			fmt.Println(actualBooks)
-
-			fmt.Println("")
-
-			fmt.Print("EXPECTED BOOKS: ")
-			fmt.Println(currentTestCase.expectedBooks)
-
-			fmt.Println("")
-
-			assert.ElementsMatch(t, currentTestCase.expectedBooks, actualBooks)
+			assert.ElementsMatch(t, *currentTestCase.expectedBooks, *actualBooks)
 		}
 
 		if currentTestCase.expectedError != nil {
