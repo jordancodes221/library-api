@@ -63,7 +63,7 @@ func main() {
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	// Create an instance of BooksHandler using its constructor
-	daoFactory := &inmemorydao.InMemoryDAOFactory{}
+	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 	realTimeProvider := &utils.ProductionDateTimeProvider{}
 	h := handlers.NewBooksHandler(daoFactory, realTimeProvider)
 
