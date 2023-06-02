@@ -27,7 +27,7 @@ func TestBooksHandler_DeleteBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
-	daoFactory := &inmemorydao.InMemoryDAOFactory{}
+	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTime,
 	}

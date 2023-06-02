@@ -351,7 +351,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: utils.ToPtr(initialTimeUpdated),
 	}
 
-	daoFactory := &inmemorydao.InMemoryDAOFactory{}
+	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
 	}

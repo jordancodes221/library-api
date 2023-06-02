@@ -28,7 +28,7 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
-	daoFactory := &inmemorydao.InMemoryDAOFactory{}
+	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTime,
 	}
