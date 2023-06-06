@@ -26,7 +26,29 @@ func (d *MySQLBookDAO) Update(newBook *models.Book) {
 }
 
 func (d *MySQLBookDAO) Read(isbn string) (*models.Book, error) {
-	return nil, nil
+	query := "SELECT ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated FROM Books WHERE ISBN = ?"
+	row := d.db.QueryRow(query, isbn)
+
+	retrievedIndividualBook := new(models.Book)
+
+	err := row.Scan(
+		&retrievedIndividualBook.ISBN,
+		&retrievedIndividualBook.State,
+		&retrievedIndividualBook.OnHoldCustomerID,
+		&retrievedIndividualBook.CheckedOutCustomerID,
+		&retrievedIndividualBook.TimeCreated,
+		&retrievedIndividualBook.TimeUpdated,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("Book not found: %v", err)
+		}
+		
+		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	return retrievedIndividualBook, nil
 }
 
 func (d *MySQLBookDAO) ReadAll() ([]*models.Book, error) {
