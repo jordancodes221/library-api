@@ -25,7 +25,15 @@ func (d *MySQLBookDAO) Create(newBook *models.Book) {
 	return
 }
 
-func (d *MySQLBookDAO) Delete(newBook *models.Book) {
+func (d *MySQLBookDAO) Delete(book *models.Book) {
+	query := "DELETE FROM Books WHERE ISBN = ?"
+
+	_, err := d.db.Exec(query, book.ISBN)
+	if err != nil {
+		fmt.Println("error deleting book from database: ", err)
+		return
+	}
+
 	return
 }
 
