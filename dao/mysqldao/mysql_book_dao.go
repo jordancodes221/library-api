@@ -37,7 +37,15 @@ func (d *MySQLBookDAO) Delete(book *models.Book) {
 	return
 }
 
-func (d *MySQLBookDAO) Update(newBook *models.Book) {
+func (d *MySQLBookDAO) Update(book *models.Book) {
+	query := "UPDATE Books SET State = ?, OnHoldCustomerID = ?, CheckedOutCustomerID = ?, TimeUpdated = ? WHERE ISBN = ?"
+
+	_, err := d.db.Exec(query, book.State, book.OnHoldCustomerID, book.CheckedOutCustomerID, book.TimeUpdated, book.ISBN)
+	if err != nil {
+		fmt.Println("error updating book: ", err)
+		return
+	}
+
 	return
 }
 
