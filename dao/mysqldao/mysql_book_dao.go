@@ -14,7 +14,7 @@ type MySQLBookDAO struct {
 }
 
 func (d *MySQLBookDAO) Create(newBook *models.Book) {
-	query := "INSERT INTO Books VALUES (?, ?, ?, ?, ?, ?)"
+	query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, ?)"
 
 	_, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, newBook.TimeCreated, newBook.TimeUpdated)
 	if err != nil {
