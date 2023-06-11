@@ -7,6 +7,8 @@ import (
 
 	"fmt"
 	// "log"
+
+	"time"
 )
 
 type MySQLBookDAO struct {
@@ -53,15 +55,20 @@ func (d *MySQLBookDAO) Read(isbn string) (*models.Book, error) {
 	query := "SELECT ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated FROM Books WHERE ISBN = ?"
 	row := d.db.QueryRow(query, isbn)
 
-	retrievedIndividualBook := new(models.Book)
+	retrievedISBN := new(sql.NullString)
+	retrievedState := new(sql.NullString)
+	retrievedOnHoldCustomerID := new(sql.NullString)
+	retrievedCheckedOutCustomerID := new(sql.NullString)
+	retrievedTimeCreated := new(sql.NullString)
+	retrievedTimeUpdated := new(sql.NullString)
 
 	err := row.Scan(
-		&retrievedIndividualBook.ISBN,
-		&retrievedIndividualBook.State,
-		&retrievedIndividualBook.OnHoldCustomerID,
-		&retrievedIndividualBook.CheckedOutCustomerID,
-		&retrievedIndividualBook.TimeCreated,
-		&retrievedIndividualBook.TimeUpdated,
+		retrievedISBN,
+		retrievedState,
+		retrievedOnHoldCustomerID,
+		retrievedCheckedOutCustomerID,
+		retrievedTimeCreated,
+		retrievedTimeUpdated,
 	)
 
 	if err != nil {
@@ -70,6 +77,47 @@ func (d *MySQLBookDAO) Read(isbn string) (*models.Book, error) {
 		}
 		
 		return nil, fmt.Errorf("error: %v", err)
+	}
+
+	retrievedIndividualBook := &models.Book{
+		ISBN: nil,
+		State: nil,
+		OnHoldCustomerID: nil,
+		CheckedOutCustomerID: nil,
+		TimeCreated: nil,
+		TimeUpdated: nil,
+	}
+
+	if retrievedISBN.Valid {
+		retrievedIndividualBook.ISBN = &retrievedISBN.String
+	}
+
+	if retrievedState.Valid {
+		retrievedIndividualBook.State = &retrievedState.String
+	}
+
+	if retrievedOnHoldCustomerID.Valid {
+		retrievedIndividualBook.OnHoldCustomerID = &retrievedOnHoldCustomerID.String
+	}
+
+	if retrievedCheckedOutCustomerID.Valid {
+		retrievedIndividualBook.CheckedOutCustomerID = &retrievedCheckedOutCustomerID.String
+	}
+
+	if retrievedTimeCreated.Valid {
+		timeCreated, err := time.Parse("2006-01-02 15:04:05", retrievedTimeCreated.String)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing time created in read: %w", err)
+		}
+		retrievedIndividualBook.TimeCreated = &timeCreated
+	}
+
+	if retrievedTimeUpdated.Valid {
+		timeUpdated, err := time.Parse("2006-01-02 15:04:05", retrievedTimeUpdated.String)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing time created in read: %w", err)
+		}
+		retrievedIndividualBook.TimeUpdated = &timeUpdated
 	}
 
 	return retrievedIndividualBook, nil
