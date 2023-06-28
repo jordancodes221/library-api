@@ -9,6 +9,8 @@ import (
 
 	"fmt"
 	// "log"
+
+	"os"
 )
 
 type MySQLDAOFactory struct {
@@ -16,7 +18,34 @@ type MySQLDAOFactory struct {
 }
 
 func ConnectDB() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "username:password@tcp(localhost:3306)/Library")
+	dbUsername, ok := os.LookupEnv("LIBRARY_DB_USERNAME")
+	if !ok {
+		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_USERNAME environment variable.")
+	}
+
+	dbPassword, ok := os.LookupEnv("LIBRARY_DB_PASSWORD")
+	if !ok {
+		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_PASSWORD environment variable.")
+	}
+
+	dbHost, ok := os.LookupEnv("LIBRARY_DB_HOST")
+	if !ok {
+		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_HOST environment variable.")
+	}
+
+	dbPort, ok := os.LookupEnv("LIBRARY_DB_PORT")
+	if !ok {
+		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_PORT environment variable.")
+	}
+
+	dbName, ok := os.LookupEnv("LIBRARY_DB_NAME")
+	if !ok {
+		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_NAME environment variable.")
+	}
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUsername, dbPassword, dbHost, dbPort, dbName)
+
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to the database: %v", err)
 	}
