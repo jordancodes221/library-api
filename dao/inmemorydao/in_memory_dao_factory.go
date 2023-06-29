@@ -20,3 +20,11 @@ func (f *InMemoryDAOFactory) BookDAO() dao.BookDAO {
 		Books: f.Books,
 	}
 }
+
+func (f *InMemoryDAOFactory) Open() error {
+	return nil
+}
+
+func (f *InMemoryDAOFactory) Close() error {
+	return nil
+}
