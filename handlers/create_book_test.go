@@ -29,11 +29,12 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 	}
 
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+	bookDAO := daoFactory.BookDAO()
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTime,
 	}
 
-	h := NewBooksHandler(daoFactory, fixedTimeProvider)
+	h := NewBooksHandler(bookDAO, fixedTimeProvider)
 	h.BookDAOInterface.Create(existingBook)
 	
 	tests := []struct{

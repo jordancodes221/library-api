@@ -352,11 +352,13 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 	}
 
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+	bookDAO := daoFactory.BookDAO()
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTimeUpdated,
 	}
 
-	h := NewBooksHandler(daoFactory, fixedTimeProvider)
+	h := NewBooksHandler(bookDAO, fixedTimeProvider)
+
 	h.BookDAOInterface.Create(existingBook1)
 	h.BookDAOInterface.Create(existingBook2)
 	h.BookDAOInterface.Create(existingBook3)
