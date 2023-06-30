@@ -64,8 +64,9 @@ func main() {
 
 	// Create an instance of BooksHandler using its constructor
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+	bookDAO := daoFactory.BookDAO()
 	realTimeProvider := &utils.ProductionDateTimeProvider{}
-	h := handlers.NewBooksHandler(daoFactory, realTimeProvider)
+	h := handlers.NewBooksHandler(bookDAO, realTimeProvider)
 
 	// Add the test data to the book dao
 	h.BookDAOInterface.Create(bookInstance00)
