@@ -51,7 +51,7 @@ func main() {
 	var bookInstance17 *models.Book = &models.Book{ISBN: utils.ToPtr("0017"), State: utils.ToPtr("checked-out"), OnHoldCustomerID: nil, CheckedOutCustomerID: utils.ToPtr("01"), TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})}
 	var bookInstance18 *models.Book = &models.Book{ISBN: utils.ToPtr("0018"), State: utils.ToPtr("on-hold"), 	OnHoldCustomerID: utils.ToPtr("01"), CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Now()), TimeUpdated: utils.ToPtr(time.Time{})}
 
-	// The follwing are for UpdateBook Time validation
+	// The following are for UpdateBook Time validation
 	arbitraryIncomingTimeCreated, _ := time.Parse(time.RFC3339, "2023-03-18T15:45:00Z")
 	arbitraryIncomingTimeUpdated, _ := time.Parse(time.RFC3339, "2022-02-18T15:45:00Z")
 	// Notes:
@@ -62,37 +62,37 @@ func main() {
 	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryIncomingTimeCreated), TimeUpdated: utils.ToPtr(arbitraryIncomingTimeUpdated)}
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
-	// Create an instance of BooksHandler using its constructor
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 	bookDAO := daoFactory.BookDAO()
+
+	// Add the test data to the book DAO
+	bookDAO.Create(bookInstance00)
+	bookDAO.Create(bookInstance0)
+	bookDAO.Create(bookInstance1)
+	bookDAO.Create(bookInstance2)
+	bookDAO.Create(bookInstance3)
+	bookDAO.Create(bookInstance4)
+	bookDAO.Create(bookInstance5)
+	bookDAO.Create(bookInstance6)
+	bookDAO.Create(bookInstance7)
+	bookDAO.Create(bookInstance8)
+	bookDAO.Create(bookInstance9)
+	bookDAO.Create(bookInstance10)
+	bookDAO.Create(bookInstance11)
+	bookDAO.Create(bookInstance12)
+	bookDAO.Create(bookInstance13)
+	bookDAO.Create(bookInstance14)
+	bookDAO.Create(bookInstance15)
+	bookDAO.Create(bookInstance16)
+	bookDAO.Create(bookInstance17)
+	bookDAO.Create(bookInstance18)
+	bookDAO.Create(bookInstance19)
+	bookDAO.Create(bookInstance20)
+	bookDAO.Create(bookInstance21)
+	bookDAO.Create(bookInstance22)
+
 	realTimeProvider := &utils.ProductionDateTimeProvider{}
 	h := handlers.NewBooksHandler(bookDAO, realTimeProvider)
-
-	// Add the test data to the book dao
-	h.BookDAOInterface.Create(bookInstance00)
-	h.BookDAOInterface.Create(bookInstance0)
-	h.BookDAOInterface.Create(bookInstance1)
-	h.BookDAOInterface.Create(bookInstance2)
-	h.BookDAOInterface.Create(bookInstance3)
-	h.BookDAOInterface.Create(bookInstance4)
-	h.BookDAOInterface.Create(bookInstance5)
-	h.BookDAOInterface.Create(bookInstance6)
-	h.BookDAOInterface.Create(bookInstance7)
-	h.BookDAOInterface.Create(bookInstance8)
-	h.BookDAOInterface.Create(bookInstance9)
-	h.BookDAOInterface.Create(bookInstance10)
-	h.BookDAOInterface.Create(bookInstance11)
-	h.BookDAOInterface.Create(bookInstance12)
-	h.BookDAOInterface.Create(bookInstance13)
-	h.BookDAOInterface.Create(bookInstance14)
-	h.BookDAOInterface.Create(bookInstance15)
-	h.BookDAOInterface.Create(bookInstance16)
-	h.BookDAOInterface.Create(bookInstance17)
-	h.BookDAOInterface.Create(bookInstance18)
-	h.BookDAOInterface.Create(bookInstance19)
-	h.BookDAOInterface.Create(bookInstance20)
-	h.BookDAOInterface.Create(bookInstance21)
-	h.BookDAOInterface.Create(bookInstance22)
 
 	router := gin.Default()
 	router.GET("/books", h.GetAllBooks)
