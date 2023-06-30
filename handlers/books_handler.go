@@ -12,9 +12,9 @@ type BooksHandler struct {
 	DateTimeInterface utils.DateTimeProvider
 }
 
-func NewBooksHandler(daoFactory dao.DAOFactory, provider utils.DateTimeProvider) (*BooksHandler) {
+func NewBooksHandler(bookDAO dao.BookDAO, provider utils.DateTimeProvider) (*BooksHandler) {
 	return &BooksHandler{
-		BookDAOInterface: daoFactory.BookDAO(),
+		BookDAOInterface: bookDAO,
 		DateTimeInterface: provider,
 	}
 }
