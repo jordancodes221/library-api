@@ -47,14 +47,16 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 	bookDAO := daoFactory.BookDAO()
+
+	bookDAO.Create(existingBook1)
+	bookDAO.Create(existingBook2)
+	bookDAO.Create(existingBook3)
+
 	fixedTimeProvider := &utils.TestingDateTimeProvider{
 		ArbitraryTime: arbitraryTime,
 	}
 
 	h := NewBooksHandler(bookDAO, fixedTimeProvider)
-	h.BookDAOInterface.Create(existingBook1)
-	h.BookDAOInterface.Create(existingBook2)
-	h.BookDAOInterface.Create(existingBook3)
 
 	tests := []struct{
 		description string
