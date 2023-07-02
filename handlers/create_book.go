@@ -95,7 +95,14 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	}
 
 	// Make sure ISBN is not already in-use
-	if bookWithISBNInUSe, _ := h.BookDAOInterface.Read(*newBook.ISBN); bookWithISBNInUSe != nil {
+	bookWithISBNInUse, err := h.BookDAOInterface.Read(*newBook.ISBN)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
+		return
+	}
+
+	if bookWithISBNInUse != nil {
 		c.IndentedJSON(http.StatusConflict, gin.H{"ERROR": "Book already exists."})
 		return
 	}
