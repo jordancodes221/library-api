@@ -16,6 +16,8 @@ import (
 
 	// "reflect"
 	// "strconv"
+
+	"log"
 )
 
 func main() {
@@ -63,6 +65,12 @@ func main() {
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+
+	if err := daoFactory.Open(); err != nil {
+		log.Fatal("failed to open database connection: ", err)
+	}
+	defer daoFactory.Close()
+
 	bookDAO := daoFactory.BookDAO()
 
 	// Add the test data to the book DAO
