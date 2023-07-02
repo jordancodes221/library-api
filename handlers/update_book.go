@@ -283,6 +283,10 @@ func (h *BooksHandler) UpdateBook(c *gin.Context) {
 		}
 	}
 
-	h.BookDAOInterface.Update(currentBook)
+	if err = h.BookDAOInterface.Update(currentBook); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
+		return
+	}
+
 	c.IndentedJSON(http.StatusOK, currentBook)
 }
