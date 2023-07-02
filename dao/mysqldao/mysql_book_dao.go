@@ -75,7 +75,7 @@ func (d *MySQLBookDAO) Read(isbn string) (*models.Book, error) {
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("Book not found: %v", err)
+			return nil, nil
 		}
 		
 		return nil, fmt.Errorf("error: %v", err)
