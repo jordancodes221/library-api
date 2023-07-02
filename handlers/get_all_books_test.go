@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 
 	"fmt"
+	"log"
 )
 
 func TestBooksHandler_GetAllBooks(t *testing.T) {
@@ -46,6 +47,12 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 	}
 
 	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+
+	if err := daoFactory.Open(); err != nil {
+		log.Fatal("failed to open database connection: ", err)
+	}
+	defer daoFactory.Close()
+
 	bookDAO := daoFactory.BookDAO()
 
 	bookDAO.Create(existingBook1)
