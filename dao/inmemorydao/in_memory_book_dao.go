@@ -8,16 +8,19 @@ type InMemoryBookDAO struct {
 	Books map[string]*models.Book
 }
 
-func (d *InMemoryBookDAO) Create(newBook *models.Book) {
+func (d *InMemoryBookDAO) Create(newBook *models.Book) error {
 	d.Books[*newBook.ISBN] = newBook
+	return nil
 }
 
-func (d *InMemoryBookDAO) Delete(book *models.Book) {
+func (d *InMemoryBookDAO) Delete(book *models.Book) error {
 	delete(d.Books, *book.ISBN)
+	return nil
 }
 
-func (d *InMemoryBookDAO) Update(book *models.Book) {
+func (d *InMemoryBookDAO) Update(book *models.Book) error {
 	d.Books[*book.ISBN] = book
+	return nil
 }
 
 func (d *InMemoryBookDAO) Read(isbn string) (*models.Book, error) {
