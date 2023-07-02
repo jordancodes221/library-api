@@ -21,7 +21,7 @@ func (h *BooksHandler) DeleteBook(c *gin.Context) {
 		return
 	}
 
-	if err = h.BookDAOInterface.Delete(book); err != nil {
+	if err := h.BookDAOInterface.Delete(book); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
 		return
 	}
