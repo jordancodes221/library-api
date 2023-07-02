@@ -104,7 +104,10 @@ func (h *BooksHandler) CreateBook(c *gin.Context) {
 	newBook.TimeCreated = h.DateTimeInterface.GetCurrentTime()
 
 	// Add the new book to our library
-	h.BookDAOInterface.Create(newBook)
+	if err := h.BookDAOInterface.Create(newBook); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
+		return
+	}
 
 	c.IndentedJSON(http.StatusCreated, newBook) // 201 status code if successful
 }
