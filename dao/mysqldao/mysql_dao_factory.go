@@ -47,12 +47,12 @@ func ConnectDB() (*sql.DB, error) {
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to the database: %v", err)
+		return nil, fmt.Errorf("failed to connect to the database: %w", err)
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping the database: %v", err)
+		return nil, fmt.Errorf("failed to ping the database: %w", err)
 	}
 
 	// log.Println("Connected to the MySQL database")

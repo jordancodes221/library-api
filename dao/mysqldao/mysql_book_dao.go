@@ -75,7 +75,7 @@ func (d *MySQLBookDAO) Read(isbn string) (*models.Book, error) {
 			return nil, nil
 		}
 		
-		return nil, fmt.Errorf("error: %v", err)
+		return nil, fmt.Errorf("error: %w", err)
 	}
 
 	retrievedIndividualBook := &models.Book{
@@ -127,7 +127,7 @@ func (d *MySQLBookDAO) ReadAll() ([]*models.Book, error) {
 
 	rows, err := d.db.Query(query)
 	if err != nil {
-		return nil, fmt.Errorf("error querying database: %v", err)
+		return nil, fmt.Errorf("error querying database: %w", err)
 	}
 	defer rows.Close()
 
@@ -144,7 +144,7 @@ func (d *MySQLBookDAO) ReadAll() ([]*models.Book, error) {
 			&nextBook.TimeCreated,
 			&nextBook.TimeUpdated,)
 		if err != nil {
-			return nil, fmt.Errorf("error: %v", err)
+			return nil, fmt.Errorf("error: %w", err)
 		}
 		retrievedBooks = append(retrievedBooks, nextBook)
 	}
