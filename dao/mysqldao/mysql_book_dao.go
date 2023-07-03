@@ -15,42 +15,39 @@ type MySQLBookDAO struct {
 	db *sql.DB
 }
 
-func (d *MySQLBookDAO) Create(newBook *models.Book) {
+func (d *MySQLBookDAO) Create(newBook *models.Book) error {
 	query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, NULL)"
 
 	timeCreated := newBook.TimeCreated.Format("2006-01-02 15:04:05")
 
 	_, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, timeCreated)
 	if err != nil {
-		fmt.Println("error adding new book to database: ", err)
-		return
+		return fmt.Errorf("error adding new book to database: %w", err)
 	}
 
-	return
+	return nil
 }
 
-func (d *MySQLBookDAO) Delete(book *models.Book) {
+func (d *MySQLBookDAO) Delete(book *models.Book) error {
 	query := "DELETE FROM Books WHERE ISBN = ?"
 
 	_, err := d.db.Exec(query, book.ISBN)
 	if err != nil {
-		fmt.Println("error deleting book from database: ", err)
-		return
+		return fmt.Errorf("error deleting book from database: %w", err)
 	}
 
-	return
+	return nil
 }
 
-func (d *MySQLBookDAO) Update(book *models.Book) {
+func (d *MySQLBookDAO) Update(book *models.Book) error {
 	query := "UPDATE Books SET State = ?, OnHoldCustomerID = ?, CheckedOutCustomerID = ?, TimeUpdated = ? WHERE ISBN = ?"
 
 	_, err := d.db.Exec(query, book.State, book.OnHoldCustomerID, book.CheckedOutCustomerID, book.TimeUpdated, book.ISBN)
 	if err != nil {
-		fmt.Println("error updating book: ", err)
-		return
+		return fmt.Errorf("error updating book: %w", err)
 	}
 
-	return
+	return nil
 }
 
 func (d *MySQLBookDAO) Read(isbn string) (*models.Book, error) {
