@@ -69,6 +69,19 @@ func (f *MySQLDAOFactory) Open() error {
 	return nil
 }
 
+func (f *MySQLDAOFactory) Close() error {
+	if f.db == nil {
+		return nil
+	}
+
+	err := f.db.Close()
+	if err != nil {
+		return fmt.Errorf("Failed to close database connection: %w", err)
+	}
+
+	return nil
+}
+
 func (f *MySQLDAOFactory) BookDAO() dao.BookDAO {
 	return &MySQLBookDAO{
 		db: f.db,
