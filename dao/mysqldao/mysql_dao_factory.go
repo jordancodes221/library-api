@@ -17,54 +17,56 @@ type MySQLDAOFactory struct {
 	db *sql.DB
 }
 
-func ConnectDB() (*sql.DB, error) {
+func NewMySQLDAOFactory() *MySQLDAOFactory {
+	return &MySQLDAOFactory{
+		db: nil,
+	}
+}
+
+func (f *MySQLDAOFactory) Open() error {
 	dbUsername, ok := os.LookupEnv("LIBRARY_DB_USERNAME")
 	if !ok {
-		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_USERNAME environment variable.")
+		return fmt.Errorf("Error retrieving LIBRARY_DB_USERNAME environment variable.")
 	}
 
 	dbPassword, ok := os.LookupEnv("LIBRARY_DB_PASSWORD")
 	if !ok {
-		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_PASSWORD environment variable.")
+		return fmt.Errorf("Error retrieving LIBRARY_DB_PASSWORD environment variable.")
 	}
 
 	dbHost, ok := os.LookupEnv("LIBRARY_DB_HOST")
 	if !ok {
-		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_HOST environment variable.")
+		return fmt.Errorf("Error retrieving LIBRARY_DB_HOST environment variable.")
 	}
 
 	dbPort, ok := os.LookupEnv("LIBRARY_DB_PORT")
 	if !ok {
-		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_PORT environment variable.")
+		return fmt.Errorf("Error retrieving LIBRARY_DB_PORT environment variable.")
 	}
 
 	dbName, ok := os.LookupEnv("LIBRARY_DB_NAME")
 	if !ok {
-		return nil, fmt.Errorf("Error retrieving LIBRARY_DB_NAME environment variable.")
+		return fmt.Errorf("Error retrieving LIBRARY_DB_NAME environment variable.")
 	}
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUsername, dbPassword, dbHost, dbPort, dbName)
 
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("failed to connect to the database: %w", err)
+		return fmt.Errorf("failed to connect to the database: %w", err)
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, fmt.Errorf("failed to ping the database: %w", err)
+		return fmt.Errorf("failed to ping the database: %w", err)
 	}
+
+	f.db = db
 
 	// log.Println("Connected to the MySQL database")
 	fmt.Println("Connected to the MySQL database")
 
-	return db, nil
-}
-
-func NewMySQLDAOFactory() *MySQLDAOFactory {
-	return &MySQLDAOFactory{
-		db: nil,
-	}
+	return nil
 }
 
 func (f *MySQLDAOFactory) BookDAO() dao.BookDAO {
