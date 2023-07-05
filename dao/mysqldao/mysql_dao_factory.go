@@ -61,17 +61,10 @@ func ConnectDB() (*sql.DB, error) {
 	return db, nil
 }
 
-func NewMySQLDAOFactory() (*MySQLDAOFactory, error) {
-	db, err := ConnectDB()
-	if err != nil {
-		return nil, err
+func NewMySQLDAOFactory() *MySQLDAOFactory {
+	return &MySQLDAOFactory{
+		db: nil,
 	}
-
-	factory := MySQLDAOFactory{
-		db: db,
-	}
-
-	return &factory, nil
 }
 
 func (f *MySQLDAOFactory) BookDAO() dao.BookDAO {
