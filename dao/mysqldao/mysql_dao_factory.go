@@ -15,11 +15,13 @@ import (
 
 type MySQLDAOFactory struct {
 	db *sql.DB
+	dbName string
 }
 
-func NewMySQLDAOFactory() *MySQLDAOFactory {
+func NewMySQLDAOFactory(dbName string) *MySQLDAOFactory {
 	return &MySQLDAOFactory{
 		db: nil,
+		dbName: dbName,
 	}
 }
 
@@ -44,10 +46,7 @@ func (f *MySQLDAOFactory) Open() error {
 		return fmt.Errorf("Error retrieving LIBRARY_DB_PORT environment variable.")
 	}
 
-	dbName, ok := os.LookupEnv("LIBRARY_DB_NAME")
-	if !ok {
-		return fmt.Errorf("Error retrieving LIBRARY_DB_NAME environment variable.")
-	}
+	dbName := f.dbName
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUsername, dbPassword, dbHost, dbPort, dbName)
 
