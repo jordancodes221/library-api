@@ -86,3 +86,12 @@ func (f *MySQLDAOFactory) BookDAO() dao.BookDAO {
 		db: f.db,
 	}
 }
+
+func (f *MySQLDAOFactory) Clear() error {
+	_, err := f.db.Exec("TRUNCATE TABLE Books;")
+	if err != nil {
+		return fmt.Errorf("failed to clear database: %w", err)
+	}
+
+	return nil
+}
