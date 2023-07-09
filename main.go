@@ -5,14 +5,14 @@ import (
 	"example/library_project/models"
 	"example/library_project/utils"
 
-	"example/library_project/dao/inmemorydao"
+	"example/library_project/dao/mysqldao"
 	
 	// "net/http"
 	"github.com/gin-gonic/gin"
 	// "errors"
 	"time"
 	// "encoding/json"
-	// "fmt"
+	"fmt"
 
 	// "reflect"
 	// "strconv"
@@ -64,7 +64,8 @@ func main() {
 	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryIncomingTimeCreated), TimeUpdated: utils.ToPtr(arbitraryIncomingTimeUpdated)}
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
-	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+	fmt.Println("CALLING MYSQL DAO FACTORY CONSTRUCTOR...")
+	daoFactory := mysqldao.NewMySQLDAOFactory()
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
