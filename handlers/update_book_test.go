@@ -7,7 +7,7 @@ import (
 	"time"
 	"example/library_project/utils"
 	"example/library_project/models"
-	"example/library_project/dao/inmemorydao"
+	"example/library_project/dao/mysqldao"
 	"github.com/stretchr/testify/assert"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -352,7 +352,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: utils.ToPtr(initialTimeUpdated),
 	}
 
-	daoFactory := inmemorydao.NewInMemoryDAOFactory()
+	daoFactory := mysqldao.NewMySQLDAOFactory()
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
