@@ -352,7 +352,7 @@ func TestBooksHandler_UpdateBook(t *testing.T) {
 		TimeUpdated: utils.ToPtr(initialTimeUpdated),
 	}
 
-	daoFactory := mysqldao.NewMySQLDAOFactory()
+	daoFactory := mysqldao.NewMySQLDAOFactory("Library_UpdateBookTest")
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)

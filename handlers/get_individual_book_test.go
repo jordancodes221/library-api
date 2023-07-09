@@ -28,7 +28,7 @@ func TestBooksHandler_GetIndividualBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
-	daoFactory := mysqldao.NewMySQLDAOFactory()
+	daoFactory := mysqldao.NewMySQLDAOFactory("Library_GetIndividualBookTest")
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)

@@ -46,7 +46,7 @@ func TestBooksHandler_GetAllBooks(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
-	daoFactory := mysqldao.NewMySQLDAOFactory()
+	daoFactory := mysqldao.NewMySQLDAOFactory("Library_GetAllBooksTest")
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)

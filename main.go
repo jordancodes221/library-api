@@ -65,7 +65,7 @@ func main() {
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
 	fmt.Println("CALLING MYSQL DAO FACTORY CONSTRUCTOR...")
-	daoFactory := mysqldao.NewMySQLDAOFactory()
+	daoFactory := mysqldao.NewMySQLDAOFactory("Library")
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
