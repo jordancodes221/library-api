@@ -4,6 +4,7 @@ package mysqldao
 import (
 	"database/sql"
 	"example/library_project/models"
+	"example/library_project/utils"
 
 	"fmt"
 	// "log"
@@ -16,14 +17,16 @@ type MySQLBookDAO struct {
 }
 
 func (d *MySQLBookDAO) Create(newBook *models.Book) error {
-	// query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, ?)"
-	query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, NULL)"
+	query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, ?)"
 
-	timeCreated := newBook.TimeCreated.Format("2006-01-02 15:04:05")
-	// timeUpdated := newBook.TimeUpdated.Format("2006-01-02 15:04:05")
+	timeCreated := utils.ToPtr(newBook.TimeCreated.Format("2006-01-02 15:04:05"))
 
-	// _, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, timeCreated, timeUpdated)
-	_, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, timeCreated)
+	var timeUpdated *string
+	if newBook.TimeUpdated != nil {
+		timeUpdated = utils.ToPtr(newBook.TimeUpdated.Format("2006-01-02 15:04:05"))
+	}
+
+	_, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, timeCreated, timeUpdated)
 	if err != nil {
 		return fmt.Errorf("error adding new book to database: %w", err)
 	}
