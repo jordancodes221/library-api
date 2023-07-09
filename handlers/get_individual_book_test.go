@@ -35,6 +35,10 @@ func TestBooksHandler_GetIndividualBook(t *testing.T) {
 	}
 	defer daoFactory.Close()
 
+	if err := daoFactory.Clear(); err != nil {
+		log.Fatal("failed to clear database: ", err)
+	}
+
 	bookDAO := daoFactory.BookDAO()
 
 	bookDAO.Create(existingBook1)
