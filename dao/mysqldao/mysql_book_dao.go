@@ -139,14 +139,14 @@ func (d *MySQLBookDAO) ReadAll() ([]*models.Book, error) {
 
 	retrievedBooks := make([]*models.Book, 0)
 
-	retrievedISBN := new(sql.NullString)
-	retrievedState := new(sql.NullString)
-	retrievedOnHoldCustomerID := new(sql.NullString)
-	retrievedCheckedOutCustomerID := new(sql.NullString)
-	retrievedTimeCreated := new(sql.NullString)
-	retrievedTimeUpdated := new(sql.NullString)
-
 	for rows.Next() {
+		retrievedISBN := new(sql.NullString)
+		retrievedState := new(sql.NullString)
+		retrievedOnHoldCustomerID := new(sql.NullString)
+		retrievedCheckedOutCustomerID := new(sql.NullString)
+		retrievedTimeCreated := new(sql.NullString)
+		retrievedTimeUpdated := new(sql.NullString)
+
 		err := rows.Scan(
 			retrievedISBN,
 			retrievedState,
