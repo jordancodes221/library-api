@@ -28,3 +28,7 @@ func (f *InMemoryDAOFactory) Open() error {
 func (f *InMemoryDAOFactory) Close() error {
 	return nil
 }
+
+func (f *InMemoryDAOFactory) Clear() error {
+	return nil
+}
