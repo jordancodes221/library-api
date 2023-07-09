@@ -16,10 +16,13 @@ type MySQLBookDAO struct {
 }
 
 func (d *MySQLBookDAO) Create(newBook *models.Book) error {
+	// query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, ?)"
 	query := "INSERT INTO Books (ISBN, State, OnHoldCustomerID, CheckedOutCustomerID, TimeCreated, TimeUpdated) VALUES (?, ?, ?, ?, ?, NULL)"
 
 	timeCreated := newBook.TimeCreated.Format("2006-01-02 15:04:05")
+	// timeUpdated := newBook.TimeUpdated.Format("2006-01-02 15:04:05")
 
+	// _, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, timeCreated, timeUpdated)
 	_, err := d.db.Exec(query, newBook.ISBN, newBook.State, newBook.OnHoldCustomerID, newBook.CheckedOutCustomerID, timeCreated)
 	if err != nil {
 		return fmt.Errorf("error adding new book to database: %w", err)
@@ -133,19 +136,68 @@ func (d *MySQLBookDAO) ReadAll() ([]*models.Book, error) {
 
 	retrievedBooks := make([]*models.Book, 0)
 
-	for rows.Next() {
-		nextBook := new(models.Book)
+	retrievedISBN := new(sql.NullString)
+	retrievedState := new(sql.NullString)
+	retrievedOnHoldCustomerID := new(sql.NullString)
+	retrievedCheckedOutCustomerID := new(sql.NullString)
+	retrievedTimeCreated := new(sql.NullString)
+	retrievedTimeUpdated := new(sql.NullString)
 
+	for rows.Next() {
 		err := rows.Scan(
-			&nextBook.ISBN,
-			&nextBook.State,
-			&nextBook.OnHoldCustomerID,
-			&nextBook.CheckedOutCustomerID,
-			&nextBook.TimeCreated,
-			&nextBook.TimeUpdated,)
+			retrievedISBN,
+			retrievedState,
+			retrievedOnHoldCustomerID,
+			retrievedCheckedOutCustomerID,
+			retrievedTimeCreated,
+			retrievedTimeUpdated,
+		)
+			
 		if err != nil {
 			return nil, fmt.Errorf("error: %w", err)
 		}
+
+		nextBook := &models.Book{
+			ISBN: nil,
+			State: nil,
+			OnHoldCustomerID: nil,
+			CheckedOutCustomerID: nil,
+			TimeCreated: nil,
+			TimeUpdated: nil,
+		}
+
+		if retrievedISBN.Valid {
+			nextBook.ISBN = &retrievedISBN.String
+		}
+	
+		if retrievedState.Valid {
+			nextBook.State = &retrievedState.String
+		}
+	
+		if retrievedOnHoldCustomerID.Valid {
+			nextBook.OnHoldCustomerID = &retrievedOnHoldCustomerID.String
+		}
+	
+		if retrievedCheckedOutCustomerID.Valid {
+			nextBook.CheckedOutCustomerID = &retrievedCheckedOutCustomerID.String
+		}
+	
+		if retrievedTimeCreated.Valid {
+			timeCreated, err := time.Parse("2006-01-02 15:04:05", retrievedTimeCreated.String)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing time created in read: %w", err)
+			}
+			nextBook.TimeCreated = &timeCreated
+		}
+	
+		if retrievedTimeUpdated.Valid {
+			timeUpdated, err := time.Parse("2006-01-02 15:04:05", retrievedTimeUpdated.String)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing time created in read: %w", err)
+			}
+			nextBook.TimeUpdated = &timeUpdated
+		}
+
 		retrievedBooks = append(retrievedBooks, nextBook)
 	}
 
