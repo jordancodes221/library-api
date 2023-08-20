@@ -18,6 +18,10 @@ import (
 	// "strconv"
 
 	"log"
+
+	"os"
+	"syscall"
+	"os/signal"
 )
 
 func main() {
@@ -70,7 +74,23 @@ func main() {
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
 	}
-	defer daoFactory.Close()
+	// defer daoFactory.Close()
+
+	signalsChannel := make(chan os.Signal, 1)
+	signal.Notify(signalsChannel, syscall.SIGINT)
+
+	go func() {
+		receivedSignal := <- signalsChannel
+		fmt.Println("RECEIVED SIGNAL...")
+
+		if receivedSignal == syscall.SIGINT {
+			fmt.Println("SIGNAL IS SIGINT...")
+			daoFactory.Close()
+			fmt.Println("CALLED DAOFACTORY'S CLOSE METHOD...")
+			fmt.Println("ABOUT TO EXIT...")
+			os.Exit(0)
+		}
+	}()
 
 	bookDAO := daoFactory.BookDAO()
 
@@ -110,6 +130,7 @@ func main() {
 	router.DELETE("/books/:isbn", h.DeleteBook)
 	router.PATCH("/books/:isbn", h.UpdateBook)
 
+	fmt.Println("ABOUT TO CALL ROUTER.RUN...")
 	router.Run("localhost:8080")
 }
 
