@@ -4,7 +4,9 @@ import (
 	"example/library_project/handlers"
 	"example/library_project/models"
 	"example/library_project/utils"
+	"example/library_project/dao"
 
+	"example/library_project/dao/inmemorydao"
 	"example/library_project/dao/mysqldao"
 	
 	// "net/http"
@@ -68,15 +70,25 @@ func main() {
 	var bookInstance21 *models.Book = &models.Book{ISBN: utils.ToPtr("0021"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(arbitraryIncomingTimeCreated), TimeUpdated: utils.ToPtr(arbitraryIncomingTimeUpdated)}
 	var bookInstance22 *models.Book = &models.Book{ISBN: utils.ToPtr("0022"), State: utils.ToPtr("available"), 	OnHoldCustomerID: nil, CheckedOutCustomerID: nil, TimeCreated: utils.ToPtr(time.Time{}), TimeUpdated: utils.ToPtr(time.Time{})}
 
-	// Environment variables for database
-	dbUsername := os.Getenv("LIBRARY_DB_USERNAME")
-	dbPassword := os.Getenv("LIBRARY_DB_PASSWORD")
-	dbHost := os.Getenv("LIBRARY_DB_HOST")
-	dbPort := os.Getenv("LIBRARY_DB_PORT")
-	dbName := os.Getenv("LIBRARY_DB_NAME")
+	// dao selection
+	var daoFactory dao.DAOFactory
+	daoSelection := os.Getenv("DAO_SELECTION")
 
-	fmt.Println("CALLING MYSQL DAO FACTORY CONSTRUCTOR...")
-	daoFactory := mysqldao.NewMySQLDAOFactory(dbUsername, dbPassword, dbHost, dbPort, dbName)
+	if daoSelection == "inmemory" {
+		daoFactory = inmemorydao.NewInMemoryDAOFactory()
+	} else if daoSelection == "mysql" {
+		// Environment variables for database
+		dbUsername := os.Getenv("LIBRARY_DB_USERNAME")
+		dbPassword := os.Getenv("LIBRARY_DB_PASSWORD")
+		dbHost := os.Getenv("LIBRARY_DB_HOST")
+		dbPort := os.Getenv("LIBRARY_DB_PORT")
+		dbName := os.Getenv("LIBRARY_DB_NAME")
+
+		fmt.Println("CALLING MYSQL DAO FACTORY CONSTRUCTOR...")
+		daoFactory = mysqldao.NewMySQLDAOFactory(dbUsername, dbPassword, dbHost, dbPort, dbName)
+	} else {
+		log.Fatal("unexpected dao selection")
+	}
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
