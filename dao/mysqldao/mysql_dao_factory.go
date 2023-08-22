@@ -10,42 +10,34 @@ import (
 	"fmt"
 	// "log"
 
-	"os"
+	// "os"
 )
 
 type MySQLDAOFactory struct {
 	db *sql.DB
+	dbUsername string
+	dbPassword string
+	dbHost string
+	dbPort string
 	dbName string
 }
 
-func NewMySQLDAOFactory(dbName string) *MySQLDAOFactory {
+func NewMySQLDAOFactory(dbUsername string, dbPassword string, dbHost string, dbPort string, dbName string) *MySQLDAOFactory {
 	return &MySQLDAOFactory{
 		db: nil,
+		dbUsername: dbUsername,
+		dbPassword: dbPassword,
+		dbHost: dbHost,
+		dbPort: dbPort,
 		dbName: dbName,
 	}
 }
 
 func (f *MySQLDAOFactory) Open() error {
-	dbUsername, ok := os.LookupEnv("LIBRARY_DB_USERNAME")
-	if !ok {
-		return fmt.Errorf("Error retrieving LIBRARY_DB_USERNAME environment variable.")
-	}
-
-	dbPassword, ok := os.LookupEnv("LIBRARY_DB_PASSWORD")
-	if !ok {
-		return fmt.Errorf("Error retrieving LIBRARY_DB_PASSWORD environment variable.")
-	}
-
-	dbHost, ok := os.LookupEnv("LIBRARY_DB_HOST")
-	if !ok {
-		return fmt.Errorf("Error retrieving LIBRARY_DB_HOST environment variable.")
-	}
-
-	dbPort, ok := os.LookupEnv("LIBRARY_DB_PORT")
-	if !ok {
-		return fmt.Errorf("Error retrieving LIBRARY_DB_PORT environment variable.")
-	}
-
+	dbUsername := f.dbUsername
+	dbPassword := f.dbPassword
+	dbHost := f.dbHost
+	dbPort := f.dbPort
 	dbName := f.dbName
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUsername, dbPassword, dbHost, dbPort, dbName)
