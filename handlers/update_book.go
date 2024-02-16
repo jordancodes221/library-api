@@ -3,12 +3,13 @@ package handlers
 import (
 	"example/library_project/models"
 	"example/library_project/utils"
-	
-	"net/http"
-	"github.com/gin-gonic/gin"
-	"errors"
+
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var invalidRequestErr = errors.New("invalid request")
