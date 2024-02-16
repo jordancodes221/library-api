@@ -2,16 +2,17 @@ package handlers
 
 import (
 	"bytes"
-	"testing"
 	"encoding/json"
-	"time"
-	"example/library_project/utils"
+	"example/library_project/dao/inmemorydao"
 	"example/library_project/models"
-	"example/library_project/dao/mysqldao"
-	"github.com/stretchr/testify/assert"
-	"github.com/gin-gonic/gin"
+	"example/library_project/utils"
 	"net/http"
 	"net/http/httptest"
+	"testing"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 
 	"fmt"
 	"log"
@@ -29,7 +30,7 @@ func TestBooksHandler_CreateBook(t *testing.T) {
 		TimeUpdated: nil,
 	}
 
-	daoFactory := mysqldao.NewMySQLDAOFactory("Library_CreateBookTest")
+	daoFactory := inmemorydao.NewInMemoryDAOFactory()
 
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
