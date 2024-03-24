@@ -9,6 +9,9 @@ type User struct{
 	Password *string `json:"password"`
 
 	Customerid *string `json:"customerid"`
+
+	// time created
+	// time updated
 }
 
 func (incomingUser *User) Validate() (error){
