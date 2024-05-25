@@ -19,6 +19,6 @@ func (f *MySQLUserDAOFactory) Open() error
 
 func (f *MySQLUserDAOFactory) Close() error 
 
-func (f *MySQLUserDAOFactory) BookDAO() userdao.UserDAO
+func (f *MySQLUserDAOFactory) UserDAO() userdao.UserDAO
 
 func (f *MySQLUserDAOFactory) Clear() error
