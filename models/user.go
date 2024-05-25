@@ -8,7 +8,7 @@ type User struct{
 	Username *string `json:"username"`
 	Password *string `json:"password"`
 
-	Customerid *string `json:"customerid"`
+	Userid *string `json:"customerid"`
 
 	// time created
 	// time updated
@@ -27,8 +27,8 @@ func (incomingUser *User) Validate() (error){
 		}
 	}
 
-	if incomingUser.Customerid != nil {
-		if *incomingUser.Customerid == "" { 	// Remark: In the first if-statement, we check the pointer to the username field. In the 2nd if-statement, we check its value.
+	if incomingUser.Userid != nil {
+		if *incomingUser.Userid == "" { 	// Remark: In the first if-statement, we check the pointer to the username field. In the 2nd if-statement, we check its value.
 			return errors.New("customerid cannot be the empty string")
 		}
 	}
