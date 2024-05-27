@@ -65,5 +65,13 @@ func (h *UsersHandler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// hash password, and update user struct from plain text to hashed password
+	// TO DO: hash password, and update user struct from plain text to hashed password
+
+	// Add the new book to our library
+	if err := h.UserDAOInterface.Create(newUser); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"ERROR": err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, newUser) // 201 status code if successful
 }
