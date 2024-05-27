@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// DeleteUser allows the client to delete a user from the library
+// DeleteUser allows the client to delete a user by username
 func (h *UsersHandler) DeleteUser(c *gin.Context) {
 	username := c.Param("username")
 
