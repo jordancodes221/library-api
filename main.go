@@ -30,10 +30,10 @@ import (
 
 func main() {
 
-	// dao selection
+	// DAO selection
 	var daoFactory dao.DAOFactory
 	daoSelection := os.Getenv("DAO_SELECTION")
-	testMode := os.Getenv("TEST_MODE") // test or live
+	testMode := os.Getenv("TEST_MODE")
 
 	if daoSelection == "inmemory" {
 		daoFactory = inmemorydao.NewInMemoryDAOFactory()
@@ -45,17 +45,17 @@ func main() {
 		dbPort := os.Getenv("LIBRARY_DB_PORT")
 		dbName := os.Getenv("LIBRARY_DB_NAME")
 
-		fmt.Println("CALLING MYSQL DAO FACTORY CONSTRUCTOR...")
 		daoFactory = mysqldao.NewMySQLDAOFactory(dbUsername, dbPassword, dbHost, dbPort, dbName)
 	} else {
 		log.Fatal("unexpected dao selection")
 	}
 
+	// Open the database connection
 	if err := daoFactory.Open(); err != nil {
 		log.Fatal("failed to open database connection: ", err)
 	}
-	// defer daoFactory.Close()
 
+	// Defer closing the database connection
 	signalsChannel := make(chan os.Signal, 1)
 	signal.Notify(signalsChannel, syscall.SIGINT)
 
@@ -66,21 +66,21 @@ func main() {
 		if receivedSignal == syscall.SIGINT {
 			fmt.Println("SIGNAL IS SIGINT...")
 			daoFactory.Close()
-			fmt.Println("CALLED DAOFACTORY'S CLOSE METHOD...")
 			fmt.Println("ABOUT TO EXIT...")
 			os.Exit(0)
 		}
 	}()
 
+	// Instantiate DAO
 	bookDAO := daoFactory.BookDAO()
 
+	// If in integration test mode, instantiate test data and add to database
 	if testMode == "integration" {
 		testBooks, err := testdata.InstantiateIntegrationTestData()
 		if err != nil{
 			log.Fatal("failed to instantiate test data")
 		}
 
-		// Add test data to the book DAP
 		for _, currentTestBook := range testBooks {
 			if err := bookDAO.Create(currentTestBook); err != nil{
 				log.Fatal("failed to add test data to DAO")
@@ -101,16 +101,3 @@ func main() {
 	fmt.Println("ABOUT TO CALL ROUTER.RUN...")
 	router.Run("localhost:8080")
 }
-
-// To test, run "go run ." in one terminal window and a curl command in the another terminal window.
-// Examples of curl commands are:
-	// GET (all books)
-		// curl localhost:8080/books
-	// GET (individual book)
-		// curl localhost:8080/books/0000
-	// POST
-		// curl localhost:8080/books --include --header "Content-Type: application/json" -d @newBook.json --request "POST"
-	// DELETE
-		// curl localhost:8080/books/0005 --request "DELETE"
-	// PATCH
-		// curl -X PATCH localhost:8080/books/00 -H 'Content-Type: application/json' -H 'Accept: application/json' -d @incomingRequest.json
