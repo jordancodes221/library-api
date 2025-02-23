@@ -1,4 +1,4 @@
-package integrationtestdata
+package testdata
 
 import (
 	"example/library_project/models"
