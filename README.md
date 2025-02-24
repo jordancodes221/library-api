@@ -1,6 +1,6 @@
 # Library API
 
-This RESTful API handles the state of books in a library. It is written in Go and utilizes the Gin framework. MySQL is implemented as one possible storage solution.
+This REST API handles the state of books in a library. It is written in Go and utilizes the Gin framework. MySQL is implemented as one possible storage solution.
 
 ## Design
 
